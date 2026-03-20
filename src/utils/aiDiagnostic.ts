@@ -413,8 +413,6 @@ function parseAIResponse(rawText: string): AIDiagnosticResult {
 
 // ── Main entry point ───────────────────────────────────────────────────────────
 export async function runAIDiagnosis(
-    apiKey: string,
-    provider: 'gemini' | 'openai',
     userProblem: string,
     lang: 'ro' | 'de' | 'en',
     parsedBrand?: string,
@@ -424,26 +422,31 @@ export async function runAIDiagnosis(
     _fallbackOpenAIKey?: string,
 ): Promise<AIDiagnosticResult | null> {
     try {
-        const activeProvider = provider || (import.meta.env.VITE_AI_PROVIDER as any) || 'gemini';
-        const activeKey = apiKey || (activeProvider === 'openai' ? import.meta.env.VITE_OPENAI_API_KEY : import.meta.env.VITE_AI_API_KEY);
+        const openAIKey = import.meta.env.VITE_OPENAI_API_KEY || _fallbackOpenAIKey;
+        const geminiKey = import.meta.env.VITE_AI_API_KEY;
 
-        if (!activeKey || activeKey.length < 5) {
-            console.warn(`[AI Diagnosis] No API key provided for ${activeProvider}.`);
-            return null;
+        // 1. Try OpenAI if available
+        if (openAIKey && openAIKey.length > 5) {
+            try {
+                const result = await callOpenAI(openAIKey, userProblem, lang, parsedBrand, model, year, signal);
+                if (result && result.causes.length > 0) return result;
+            } catch (err) {
+                console.warn(`[AI Diagnosis] OpenAI failed, trying fallback:`, err);
+                // If Gemini key is also missing, rethrow the error
+                if (!geminiKey) throw err;
+            }
         }
 
-        let result: AIDiagnosticResult;
-        if (activeProvider === 'gemini') {
-            result = await callGemini(activeKey, userProblem, lang, parsedBrand, model, year, signal);
-        } else {
-            result = await callOpenAI(activeKey, userProblem, lang, parsedBrand, model, year, signal);
+        // 2. Try Gemini
+        if (geminiKey && geminiKey.length > 5) {
+            return await callGemini(geminiKey, userProblem, lang, parsedBrand, model, year, signal);
         }
-        if (result && result.causes.length > 0) return result;
-        console.warn(`[AI Diagnosis] ${provider} returned empty result.`);
+
+        console.warn(`[AI Diagnosis] No valid key/provider available.`);
         return null;
     } catch (err: unknown) {
         if (err instanceof Error && err.name === 'AbortError') return null;
-        console.error(`[AI Diagnosis] ${provider} failed:`, err);
+        console.error(`[AI Diagnosis] failed:`, err);
         
         // Rethrow specialized errors for the UI to display
         const msg = String(err).toLowerCase();
@@ -464,24 +467,55 @@ export interface AIPartsResult {
 }
 
 export async function runAIPartsSearch(
-    apiKey: string,
-    _provider: 'gemini' | 'openai',
     diagnosis: AIDiagnosticResult,
     lang: 'ro' | 'de' | 'en',
     currency: 'RON' | 'EUR',
     signal?: AbortSignal,
 ): Promise<AIPartsResult | null> {
-    try {
-        const activeKey = apiKey || import.meta.env.VITE_AI_API_KEY || import.meta.env.VITE_OPENAI_API_KEY;
-        if (!activeKey || activeKey.length < 5) return null;
-        const userMessage = `Vă rugăm să analizați următoarele cauze și componente și să furnizați estimări de prețuri și sfaturi:
+    const openAIKey = import.meta.env.VITE_OPENAI_API_KEY;
+    const geminiKey = import.meta.env.VITE_AI_API_KEY;
+
+    const userMessage = `Vă rugăm să analizați următoarele cauze și componente și să furnizați estimări de prețuri și sfaturi:
 ${diagnosis.causes.map((c, i) => `Cauza ${i}: ${c.name}
 Piese necesare estimate: ${c.partKeywords?.join(', ') || 'N/A'}`).join('\n\n')}`;
 
+    // 1. Try OpenAI first
+    if (openAIKey && openAIKey.length > 5) {
+        try {
+            const response = await fetch('/api/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${openAIKey}`,
+                },
+                signal,
+                body: JSON.stringify({
+                    model: 'gpt-4o-mini',
+                    temperature: 0.2,
+                    response_format: { type: 'json_object' },
+                    messages: [
+                        { role: 'system', content: getPartsSearchPrompt(lang, currency) },
+                        { role: 'user', content: userMessage },
+                    ],
+                }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const rawText = data.choices[0].message.content;
+                return JSON.parse(rawText);
+            }
+        } catch (err) {
+            console.warn('[AI Parts] OpenAI failed, falling back to Gemini:', err);
+        }
+    }
+
+    // 2. Try Gemini
+    if (geminiKey && geminiKey.length > 5) {
         for (const modelName of GEMINI_MODELS) {
             try {
                 const response = await fetch(
-                    `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${activeKey}`,
+                    `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKey}`,
                     {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -512,12 +546,9 @@ Piese necesare estimate: ${c.partKeywords?.join(', ') || 'N/A'}`).join('\n\n')}`
                 continue;
             }
         }
-    } catch (err: unknown) {
-        console.error(`[AI Parts] failed:`, err);
     }
 
-    // If we're here, all models in the list failed (usually all 429 or 404)
-    throw new Error('QUOTA_EXHAUSTED');
+    return null;
 }
 
 // ── Converter: AIDiagnosticResult → DiagnosticResult ─────────────────────────

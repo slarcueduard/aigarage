@@ -232,8 +232,6 @@ export default function HomeScreen() {
                     }, 45000);
 
                     const aiResult = await runAIDiagnosis(
-                        '',
-                        'gemini',
                         fullProblemText.trim(),
                         lang,
                         selectedBrand || p.detectedBrand || undefined,
@@ -273,8 +271,6 @@ export default function HomeScreen() {
                             partsAbort.current = new AbortController();
                             const currency: 'RON' | 'EUR' = lang === 'ro' ? 'RON' : 'EUR';
                             runAIPartsSearch(
-                                import.meta.env.VITE_AI_API_KEY || '',
-                                import.meta.env.VITE_AI_PROVIDER ?? 'gemini',
                                 aiResult,
                                 lang,
                                 currency,
