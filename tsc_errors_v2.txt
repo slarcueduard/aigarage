@@ -1,0 +1,20 @@
+﻿src/App.tsx(3,30): error TS6133: 'BarChart2' is declared but its value is never read.
+src/components/TrialGuard.tsx(1,10): error TS1484: 'ReactNode' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/screens/HomeScreen.tsx(3,32): error TS6133: 'Clock' is declared but its value is never read.
+src/screens/HomeScreen.tsx(10,1): error TS6192: All imports in import declaration are unused.
+src/screens/HomeScreen.tsx(17,15): error TS6196: 'DiagnosticResult' is declared but never used.
+src/screens/HomeScreen.tsx(135,25): error TS2554: Expected 1 arguments, but got 0.
+src/screens/JobDetailScreen.tsx(1,31): error TS1484: 'ReactNode' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/screens/JobDetailScreen.tsx(6,14): error TS6133: 'ChevronRight' is declared but its value is never read.
+src/screens/JobDetailScreen.tsx(6,41): error TS6133: 'Hash' is declared but its value is never read.
+src/screens/JobDetailScreen.tsx(37,73): error TS6133: 'lang' is declared but its value is never read.
+src/screens/JobDetailScreen.tsx(64,21): error TS6133: 'searchJobs' is declared but its value is never read.
+src/screens/JobDetailScreen.tsx(64,55): error TS6133: 'jobs' is declared but its value is never read.
+src/utils/aiDiagnostic.ts(453,5): error TS6133: 'provider' is declared but its value is never read.
+src/utils/textParser.ts(30,7): error TS2322: Type '"VW"' is not assignable to type '"Audi" | "BMW" | "Chevrolet" | "Citroen" | "Dacia" | "Fiat" | "Ford" | "Honda" | "Hyundai" | "Kia" | "Land Rover" | "Mazda" | "Mercedes-Benz" | "Mitsubishi" | "Nissan" | "Opel" | ... 9 more ... | "Unknown"'.
+src/utils/textParser.ts(32,7): error TS2322: Type '"Mercedes"' is not assignable to type '"Audi" | "BMW" | "Chevrolet" | "Citroen" | "Dacia" | "Fiat" | "Ford" | "Honda" | "Hyundai" | "Kia" | "Land Rover" | "Mazda" | "Mercedes-Benz" | "Mitsubishi" | "Nissan" | "Opel" | ... 9 more ... | "Unknown"'.
+src/utils/textParser.ts(37,7): error TS2322: Type '"JEEP"' is not assignable to type '"Audi" | "BMW" | "Chevrolet" | "Citroen" | "Dacia" | "Fiat" | "Ford" | "Honda" | "Hyundai" | "Kia" | "Land Rover" | "Mazda" | "Mercedes-Benz" | "Mitsubishi" | "Nissan" | "Opel" | ... 9 more ... | "Unknown"'.
+src/utils/vin_decoder.ts(13,14): error TS2322: Type '"VW"' is not assignable to type '"Audi" | "BMW" | "Chevrolet" | "Citroen" | "Dacia" | "Fiat" | "Ford" | "Honda" | "Hyundai" | "Kia" | "Land Rover" | "Mazda" | "Mercedes-Benz" | "Mitsubishi" | "Nissan" | "Opel" | ... 9 more ... | "Unknown"'.
+src/utils/vin_decoder.ts(14,14): error TS2322: Type '"VW"' is not assignable to type '"Audi" | "BMW" | "Chevrolet" | "Citroen" | "Dacia" | "Fiat" | "Ford" | "Honda" | "Hyundai" | "Kia" | "Land Rover" | "Mazda" | "Mercedes-Benz" | "Mitsubishi" | "Nissan" | "Opel" | ... 9 more ... | "Unknown"'.
+src/utils/vin_decoder.ts(15,14): error TS2322: Type '"VW"' is not assignable to type '"Audi" | "BMW" | "Chevrolet" | "Citroen" | "Dacia" | "Fiat" | "Ford" | "Honda" | "Hyundai" | "Kia" | "Land Rover" | "Mazda" | "Mercedes-Benz" | "Mitsubishi" | "Nissan" | "Opel" | ... 9 more ... | "Unknown"'.
+src/utils/vin_decoder.ts(16,14): error TS2322: Type '"VW"' is not assignable to type '"Audi" | "BMW" | "Chevrolet" | "Citroen" | "Dacia" | "Fiat" | "Ford" | "Honda" | "Hyundai" | "Kia" | "Land Rover" | "Mazda" | "Mercedes-Benz" | "Mitsubishi" | "Nissan" | "Opel" | ... 9 more ... | "Unknown"'.

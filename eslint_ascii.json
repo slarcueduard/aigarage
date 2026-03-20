@@ -1,0 +1,175 @@
+
+E:\AI\AIGarage\src\screens\DashboardScreen.tsx
+  16:27  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. This value was memoized in source but not in compilation output.
+
+E:\AI\AIGarage\src\screens\DashboardScreen.tsx:16:27
+  14 |
+  15 |     const now = new Date();
+> 16 |     const thisMonthJobs = useMemo(() =>
+     |                           ^^^^^^^^^^^^^
+> 17 |         jobs.filter(j => {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 18 |             const d = new Date(j.date);
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 19 |             return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 20 |         }),
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 21 |         [jobs]
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 22 |     );
+     | ^^^^^^ Could not preserve existing memoization
+  23 |
+  24 |     const thisMonthRevenue = thisMonthJobs.reduce((s, j) =>
+  25 |         s + j.lineItems.reduce((a, l) => a + l.qty * l.unitPrice, 0), 0  react-hooks/preserve-manual-memoization
+  21:9   warning  React Hook useMemo has a missing dependency: 'now'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        react-hooks/exhaustive-deps
+
+E:\AI\AIGarage\src\screens\DiagnosisScreen.tsx
+   79:12  error  'result' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+   92:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\AI\AIGarage\src\screens\DiagnosisScreen.tsx:92:13
+  90 |         if (problemText.trim().length >= 4) {
+  91 |             const p = parseRomanianProblem(problemText);
+> 92 |             setParsed(p);
+     |             ^^^^^^^^^ Avoid calling setState() directly within an effect
+  93 |         } else {
+  94 |             setParsed(null);
+  95 |             setResult(null);  react-hooks/set-state-in-effect
+  103:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\AI\AIGarage\src\screens\DiagnosisScreen.tsx:103:13
+  101 |         if (vin.replace(/\s/g, '').length === 17) {
+  102 |             const result = decodeVIN(vin);
+> 103 |             setDecoded(result);
+      |             ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  104 |         } else {
+  105 |             setDecoded(null);
+  106 |         }             react-hooks/set-state-in-effect
+
+E:\AI\AIGarage\src\screens\DiagnosticResultScreen.tsx
+  58:9  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\AI\AIGarage\src\screens\DiagnosticResultScreen.tsx:58:9
+  56 |         if (!vehicle) { navigate('/diagnosis'); return; }
+  57 |         const r = runDiagnosis({ vehicle, dtcCode, symptoms: symptoms ?? [] });
+> 58 |         setResult(r);
+     |         ^^^^^^^^^ Avoid calling setState() directly within an effect
+  59 |         setCauseStates(new Array(r.causes.length).fill('idle'));
+  60 |     }, []);
+  61 |  react-hooks/set-state-in-effect
+  60:8  warning  React Hook useEffect has missing dependencies: 'dtcCode', 'navigate', 'symptoms', and 'vehicle'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react-hooks/exhaustive-deps
+
+E:\AI\AIGarage\src\screens\HomeScreen.tsx
+   80:13   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\AI\AIGarage\src\screens\HomeScreen.tsx:80:13
+  78 |
+  79 |         if (text.trim().length < 4) {
+> 80 |             setResult(null); setParsed(null); setTyping(false); setSavedJobId(null);
+     |             ^^^^^^^^^ Avoid calling setState() directly within an effect
+  81 |             setAiMode('hidden');
+  82 |             return;
+  83 |         }                                                                                                                                                                                                    react-hooks/set-state-in-effect
+  109:53   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-explicit-any
+  119:106  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-explicit-any
+  138:8    warning  React Hook useEffect has missing dependencies: 'settings.aiApiKey' and 'settings.aiProvider'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react-hooks/exhaustive-deps
+  147:13   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\AI\AIGarage\src\screens\HomeScreen.tsx:147:13
+  145 |         const currentBrand = result?.vehicle?.brand ?? null;
+  146 |         if ((currentTopCause && currentTopCause !== prevTopCause.current) || (currentBrand && currentBrand !== prevBrand.current)) {
+> 147 |             setExpandedCauseIndex(0);
+      |             ^^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  148 |             prevTopCause.current = currentTopCause;
+  149 |             prevBrand.current = currentBrand;
+  150 |         } else if (!result) {  react-hooks/set-state-in-effect
+
+E:\AI\AIGarage\src\screens\InvoiceScreen.tsx
+  24:38  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+  38:32  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\AI\AIGarage\src\screens\InvoiceScreen.tsx:38:32
+  36 |
+  37 |     useEffect(() => {
+> 38 |         if (existingInvoice) { setInvoice({ ...existingInvoice }); return; }
+     |                                ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  39 |
+  40 |         // Create new invoice from job or blank
+  41 |         const lines: JobLineItem[] = job  react-hooks/set-state-in-effect
+  70:8   warning  React Hook useEffect has missing dependencies: 'existingInvoice', 'invoices', 'job', 'lang', and 'settings'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  react-hooks/exhaustive-deps
+
+E:\AI\AIGarage\src\screens\JobDetailScreen.tsx
+  76:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\AI\AIGarage\src\screens\JobHistoryScreen.tsx
+  171:83  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\AI\AIGarage\src\screens\PartsScreen.tsx
+  44:13  error  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+
+E:\AI\AIGarage\src\utils\aiDiagnostic.ts
+  44:7   error  'SYSTEM_PROMPT' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  49:16  error  'callGemini' is defined but never used              @typescript-eslint/no-unused-vars
+  49:27  error  'apiKey' is defined but never used                  @typescript-eslint/no-unused-vars
+  49:43  error  'userProblem' is defined but never used             @typescript-eslint/no-unused-vars
+  49:64  error  'parsedBrand' is defined but never used             @typescript-eslint/no-unused-vars
+  49:86  error  'signal' is defined but never used                  @typescript-eslint/no-unused-vars
+  56:16  error  'callOpenAI' is defined but never used              @typescript-eslint/no-unused-vars
+  56:27  error  'apiKey' is defined but never used                  @typescript-eslint/no-unused-vars
+  56:43  error  'userProblem' is defined but never used             @typescript-eslint/no-unused-vars
+  56:64  error  'parsedBrand' is defined but never used             @typescript-eslint/no-unused-vars
+  56:86  error  'signal' is defined but never used                  @typescript-eslint/no-unused-vars
+  65:5   error  'apiKey' is defined but never used                  @typescript-eslint/no-unused-vars
+  66:5   error  'provider' is defined but never used                @typescript-eslint/no-unused-vars
+  67:5   error  'userProblem' is defined but never used             @typescript-eslint/no-unused-vars
+  68:5   error  'parsedBrand' is defined but never used             @typescript-eslint/no-unused-vars
+  69:5   error  'signal' is defined but never used                  @typescript-eslint/no-unused-vars
+
+E:\AI\AIGarage\src\utils\textParser.ts
+  31:7   error  'RULES' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  34:7   error  'BRAND_PATTERNS' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  37:10  error  'detectModel' is defined but never used              @typescript-eslint/no-unused-vars
+  69:10  error  'detectYear' is defined but never used               @typescript-eslint/no-unused-vars
+  84:38  error  'text' is defined but never used                     @typescript-eslint/no-unused-vars
+
+??? 39 problems (35 errors, 4 warnings)
+

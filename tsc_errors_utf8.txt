@@ -1,0 +1,25 @@
+﻿src/screens/DiagnosisScreen.tsx(79,12): error TS6133: 'result' is declared but its value is never read.
+src/utils/aiDiagnostic.ts(44,7): error TS6133: 'SYSTEM_PROMPT' is declared but its value is never read.
+src/utils/aiDiagnostic.ts(49,16): error TS6133: 'callGemini' is declared but its value is never read.
+src/utils/aiDiagnostic.ts(49,27): error TS6133: 'apiKey' is declared but its value is never read.
+src/utils/aiDiagnostic.ts(49,43): error TS6133: 'userProblem' is declared but its value is never read.
+src/utils/aiDiagnostic.ts(49,64): error TS6133: 'parsedBrand' is declared but its value is never read.
+src/utils/aiDiagnostic.ts(49,86): error TS6133: 'signal' is declared but its value is never read.
+src/utils/aiDiagnostic.ts(56,16): error TS6133: 'callOpenAI' is declared but its value is never read.
+src/utils/aiDiagnostic.ts(56,27): error TS6133: 'apiKey' is declared but its value is never read.
+src/utils/aiDiagnostic.ts(56,43): error TS6133: 'userProblem' is declared but its value is never read.
+src/utils/aiDiagnostic.ts(56,64): error TS6133: 'parsedBrand' is declared but its value is never read.
+src/utils/aiDiagnostic.ts(56,86): error TS6133: 'signal' is declared but its value is never read.
+src/utils/aiDiagnostic.ts(65,5): error TS6133: 'apiKey' is declared but its value is never read.
+src/utils/aiDiagnostic.ts(66,5): error TS6133: 'provider' is declared but its value is never read.
+src/utils/aiDiagnostic.ts(67,5): error TS6133: 'userProblem' is declared but its value is never read.
+src/utils/aiDiagnostic.ts(68,5): error TS6133: 'parsedBrand' is declared but its value is never read.
+src/utils/aiDiagnostic.ts(69,5): error TS6133: 'signal' is declared but its value is never read.
+src/utils/diagnosticEngine.ts(1,10): error TS1484: 'DiagnosisInput' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/utils/diagnosticEngine.ts(1,26): error TS1484: 'DiagnosticResult' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/utils/textParser.ts(31,7): error TS6133: 'RULES' is declared but its value is never read.
+src/utils/textParser.ts(34,7): error TS6133: 'BRAND_PATTERNS' is declared but its value is never read.
+src/utils/textParser.ts(37,10): error TS6133: 'detectModel' is declared but its value is never read.
+src/utils/textParser.ts(69,10): error TS6133: 'detectYear' is declared but its value is never read.
+src/utils/textParser.ts(84,38): error TS6133: 'text' is declared but its value is never read.
+src/utils/vin_decoder.ts(189,47): error TS2554: Expected 1 arguments, but got 2.

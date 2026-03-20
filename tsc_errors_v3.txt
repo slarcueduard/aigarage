@@ -1,0 +1,20 @@
+﻿src/screens/HomeScreen.tsx(10,1): error TS6192: All imports in import declaration are unused.
+src/screens/HomeScreen.tsx(727,62): error TS2304: Cannot find name 'PartsSection'.
+src/screens/JobDetailScreen.tsx(222,33): error TS2322: Type '{ icon: Element; label: string; value: string; onChange: (v: string) => void; lang: "ro" | "en" | "de"; }' is not assignable to type 'IntrinsicAttributes & EnrichmentFieldProps'.
+  Property 'lang' does not exist on type 'IntrinsicAttributes & EnrichmentFieldProps'.
+src/screens/JobDetailScreen.tsx(230,33): error TS2322: Type '{ icon: Element; label: string; value: string; type: string; onChange: (v: string) => void; lang: "ro" | "en" | "de"; }' is not assignable to type 'IntrinsicAttributes & EnrichmentFieldProps'.
+  Property 'lang' does not exist on type 'IntrinsicAttributes & EnrichmentFieldProps'.
+src/screens/JobDetailScreen.tsx(237,33): error TS2322: Type '{ icon: Element; label: string; value: string; onChange: (v: string) => void; lang: "ro" | "en" | "de"; }' is not assignable to type 'IntrinsicAttributes & EnrichmentFieldProps'.
+  Property 'lang' does not exist on type 'IntrinsicAttributes & EnrichmentFieldProps'.
+src/screens/JobDetailScreen.tsx(244,33): error TS2322: Type '{ icon: Element; label: string; value: "Audi" | "BMW" | "Chevrolet" | "Citroen" | "Dacia" | "Fiat" | "Ford" | "Honda" | "Hyundai" | "Kia" | "Land Rover" | "Mazda" | "Mercedes-Benz" | ... 13 more ... | "Unknown"; onChange: (v: string) => void; lang: "ro" | ... 1 more ... | "de"; }' is not assignable to type 'IntrinsicAttributes & EnrichmentFieldProps'.
+  Property 'lang' does not exist on type 'IntrinsicAttributes & EnrichmentFieldProps'.
+src/screens/JobDetailScreen.tsx(251,33): error TS2322: Type '{ icon: Element; label: string; value: string; onChange: (v: string) => void; lang: "ro" | "en" | "de"; }' is not assignable to type 'IntrinsicAttributes & EnrichmentFieldProps'.
+  Property 'lang' does not exist on type 'IntrinsicAttributes & EnrichmentFieldProps'.
+src/screens/JobDetailScreen.tsx(259,33): error TS2322: Type '{ icon: Element; label: string; value: string; type: string; onChange: (v: string) => void; lang: "ro" | "en" | "de"; }' is not assignable to type 'IntrinsicAttributes & EnrichmentFieldProps'.
+  Property 'lang' does not exist on type 'IntrinsicAttributes & EnrichmentFieldProps'.
+src/screens/JobDetailScreen.tsx(266,33): error TS2322: Type '{ icon: Element; label: string; value: string; onChange: (v: string) => void; lang: "ro" | "en" | "de"; }' is not assignable to type 'IntrinsicAttributes & EnrichmentFieldProps'.
+  Property 'lang' does not exist on type 'IntrinsicAttributes & EnrichmentFieldProps'.
+src/utils/vin_decoder.ts(13,14): error TS2322: Type '"VW"' is not assignable to type '"Audi" | "BMW" | "Chevrolet" | "Citroen" | "Dacia" | "Fiat" | "Ford" | "Honda" | "Hyundai" | "Kia" | "Land Rover" | "Mazda" | "Mercedes-Benz" | "Mitsubishi" | "Nissan" | "Opel" | ... 10 more ... | "Unknown"'.
+src/utils/vin_decoder.ts(14,14): error TS2322: Type '"VW"' is not assignable to type '"Audi" | "BMW" | "Chevrolet" | "Citroen" | "Dacia" | "Fiat" | "Ford" | "Honda" | "Hyundai" | "Kia" | "Land Rover" | "Mazda" | "Mercedes-Benz" | "Mitsubishi" | "Nissan" | "Opel" | ... 10 more ... | "Unknown"'.
+src/utils/vin_decoder.ts(15,14): error TS2322: Type '"VW"' is not assignable to type '"Audi" | "BMW" | "Chevrolet" | "Citroen" | "Dacia" | "Fiat" | "Ford" | "Honda" | "Hyundai" | "Kia" | "Land Rover" | "Mazda" | "Mercedes-Benz" | "Mitsubishi" | "Nissan" | "Opel" | ... 10 more ... | "Unknown"'.
+src/utils/vin_decoder.ts(16,14): error TS2322: Type '"VW"' is not assignable to type '"Audi" | "BMW" | "Chevrolet" | "Citroen" | "Dacia" | "Fiat" | "Ford" | "Honda" | "Hyundai" | "Kia" | "Land Rover" | "Mazda" | "Mercedes-Benz" | "Mitsubishi" | "Nissan" | "Opel" | ... 10 more ... | "Unknown"'.
