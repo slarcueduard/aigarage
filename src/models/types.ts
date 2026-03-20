@@ -141,6 +141,7 @@ export interface Job {
     lineItems: JobLineItem[];
     laborHours: number;
     laborRate: number;
+    hasAI?: boolean; // Added based on the instruction's intent to "update hasAI check" and "cleanup types"
     notes: string;
     tags: string[];
     customerName?: string;
@@ -191,9 +192,6 @@ export interface GarageSettings {
     logoBase64?: string;
     ownerName?: string;           // Titular / Mecanic principal
     specialization?: string;      // Specializare / Mărci
-    aiApiKey?: string;            // Gemini API key for AI diagnosis (primary)
-    openaiApiKey?: string;        // OpenAI API key (fallback)
-    aiProvider?: 'gemini' | 'openai'; // AI provider (default: gemini)
     firstSeenAt?: number;         // Unix ms timestamp of first visit
 }
 

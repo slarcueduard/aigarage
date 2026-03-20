@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Wrench, FolderOpen, Settings } from 'lucide-react';
 import { useGarageStore } from './store/useGarageStore';

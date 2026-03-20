@@ -134,7 +134,7 @@ export default function HomeScreen() {
     const partsAbort = useRef<AbortController | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    const hasAI = !!(settings.aiApiKey && settings.aiApiKey.trim().length >= 10);
+    const hasAI = !!(import.meta.env.VITE_AI_API_KEY || import.meta.env.VITE_OPENAI_API_KEY);
 
     // Real-time diagnosis — AI-first with rule-based fallback
     useEffect(() => {
@@ -232,15 +232,15 @@ export default function HomeScreen() {
                     }, 45000);
 
                     const aiResult = await runAIDiagnosis(
-                        settings.aiApiKey!,
-                        settings.aiProvider ?? 'gemini',
+                        '',
+                        'gemini',
                         fullProblemText.trim(),
                         lang,
                         selectedBrand || p.detectedBrand || undefined,
                         selectedModel || p.detectedModel || undefined,
                         selectedYear || (p.detectedYear ? String(p.detectedYear) : undefined),
                         aiAbort.current.signal,
-                        settings.openaiApiKey,
+                        '',
                     );
                     clearTimeout(timeoutId);
 
@@ -264,17 +264,17 @@ export default function HomeScreen() {
                             brand: explicitBrand,
                             model: aiVehicle.model,
                             has_vin: !!vinMotorCode,
-                            provider: settings.aiProvider || 'gemini'
+                            provider: import.meta.env.VITE_AI_PROVIDER || 'gemini'
                         });
 
                         // ── Stage 2: Parts search in background ──────────────────
-                        if (settings.aiApiKey) {
+                        if (hasAI) {
                             setPartsLoading(true);
                             partsAbort.current = new AbortController();
                             const currency: 'RON' | 'EUR' = lang === 'ro' ? 'RON' : 'EUR';
                             runAIPartsSearch(
-                                settings.aiApiKey,
-                                settings.aiProvider ?? 'gemini',
+                                import.meta.env.VITE_AI_API_KEY || '',
+                                import.meta.env.VITE_AI_PROVIDER ?? 'gemini',
                                 aiResult,
                                 lang,
                                 currency,

@@ -52,9 +52,6 @@ const DEFAULT_SETTINGS: GarageSettings = {
     currency: 'RON',
     language: 'ro',
     partsRegion: 'eu',
-    aiApiKey: '',
-    openaiApiKey: '',
-    aiProvider: 'openai',
 };
 
 export function loadSettings(): GarageSettings {
@@ -69,9 +66,6 @@ export function loadSettings(): GarageSettings {
     // ALWAYS force the latest bundled API keys — old localStorage keys must never win
     return {
         ...saved,
-        aiApiKey: DEFAULT_SETTINGS.aiApiKey,
-        openaiApiKey: DEFAULT_SETTINGS.openaiApiKey,
-        aiProvider: DEFAULT_SETTINGS.aiProvider,
     };
 }
 

@@ -423,11 +423,19 @@ export async function runAIDiagnosis(
     _fallbackOpenAIKey?: string,
 ): Promise<AIDiagnosticResult | null> {
     try {
+        const activeProvider = provider || (import.meta.env.VITE_AI_PROVIDER as any) || 'gemini';
+        const activeKey = apiKey || (activeProvider === 'openai' ? import.meta.env.VITE_OPENAI_API_KEY : import.meta.env.VITE_AI_API_KEY);
+
+        if (!activeKey || activeKey.length < 5) {
+            console.warn(`[AI Diagnosis] No API key provided for ${activeProvider}.`);
+            return null;
+        }
+
         let result: AIDiagnosticResult;
-        if (provider === 'gemini') {
-            result = await callGemini(apiKey, userProblem, lang, parsedBrand, model, year, signal);
+        if (activeProvider === 'gemini') {
+            result = await callGemini(activeKey, userProblem, lang, parsedBrand, model, year, signal);
         } else {
-            result = await callOpenAI(apiKey, userProblem, lang, parsedBrand, model, year, signal);
+            result = await callOpenAI(activeKey, userProblem, lang, parsedBrand, model, year, signal);
         }
         if (result && result.causes.length > 0) return result;
         console.warn(`[AI Diagnosis] ${provider} returned empty result.`);
@@ -457,6 +465,8 @@ export async function runAIPartsSearch(
     signal?: AbortSignal,
 ): Promise<AIPartsResult | null> {
     try {
+        const activeKey = apiKey || import.meta.env.VITE_AI_API_KEY || import.meta.env.VITE_OPENAI_API_KEY;
+        if (!activeKey || activeKey.length < 5) return null;
         const userMessage = `Vă rugăm să analizați următoarele cauze și componente și să furnizați estimări de prețuri și sfaturi:
 ${diagnosis.causes.map((c, i) => `Cauza ${i}: ${c.name}
 Piese necesare estimate: ${c.partKeywords?.join(', ') || 'N/A'}`).join('\n\n')}`;
@@ -464,7 +474,7 @@ Piese necesare estimate: ${c.partKeywords?.join(', ') || 'N/A'}`).join('\n\n')}`
         for (const modelName of GEMINI_MODELS) {
             try {
                 const response = await fetch(
-                    `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
+                    `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${activeKey}`,
                     {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },

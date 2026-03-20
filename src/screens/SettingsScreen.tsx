@@ -193,50 +193,6 @@ export default function SettingsScreen() {
                 </div>
             </div>
 
-            {/* ── Section 4: AI Diagnosis ── */}
-            <div style={cardStyle}>
-                {(() => {
-                    const s = sectionHeaderStyle('#EDE9FE', '#7C3AED'); return (
-                        <div style={s.wrapper}>
-                            <div style={s.icon}><span style={{ fontSize: 14 }}>🤖</span></div>
-                            <span style={s.label}>{lp(lang, 'Diagnostic AI (Natural)', 'KI-Diagnose (Natural)', 'AI Diagnosis (Natural)')}</span>
-                        </div>
-                    );
-                })()}
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    <div>
-                        <label style={labelStyle}>{lp(lang, 'Furnizor AI', 'KI-Anbieter', 'AI Provider')}</label>
-                        <select
-                            style={{ ...inputStyle, appearance: 'auto' }}
-                            value={form.aiProvider ?? 'gemini'}
-                            onChange={e => setForm(p => ({ ...p, aiProvider: e.target.value as 'gemini' | 'openai' }))}
-                        >
-                            <option value="gemini">Google Gemini (Gratuit)</option>
-                            <option value="openai">OpenAI ChatGPT</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label style={labelStyle}>{lp(lang, 'Cheie API (API Key)', 'API-Schlüssel', 'API Key')}</label>
-                        <input
-                            style={inputStyle}
-                            type="password"
-                            placeholder={form.aiProvider === 'gemini' ? 'AIzaSy...' : 'sk-...'}
-                            value={form.aiApiKey ?? ''}
-                            onChange={e => setForm(p => ({ ...p, aiApiKey: e.target.value }))}
-                        />
-                        <div style={{ fontSize: '0.65rem', fontWeight: 600, color: '#6B7280', marginTop: 6, lineHeight: 1.4 }}>
-                            {lp(lang,
-                                'Fără cheie API, aplicația va folosi doar regulile offline predefinite de diagnostic.',
-                                'Ohne API-Schlüssel verwendet die App nur vordefinierte Offline-Diagnoseregeln.',
-                                'Without an API key, the app will solely rely on predefined offline diagnostic rules.'
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             {/* ── Section 5: Preferences ── */}
             <div style={cardStyle}>
                 {(() => {
