@@ -219,14 +219,15 @@ async function callGemini(
                 },
             );
 
-            if (response.status === 404 || response.status === 400) {
-                // Model not available — try next
-                console.warn(`[AI Diagnosis] Model ${modelName} not available (${response.status}), trying next...`);
+            if (response.status === 404 || response.status === 400 || response.status === 429) {
+                // Model not available, bad request or Rate Limited — try next
+                console.warn(`[AI Diagnosis] Model ${modelName} ${response.status === 429 ? 'Rate Limited' : 'Unavailable'} (${response.status}), trying next...`);
                 continue;
             }
 
             if (!response.ok) {
                 const err = await response.text();
+                // If it's a 5xx or something else, throw for the upper layer to catch
                 throw new Error(`Gemini API error ${response.status}: ${err}`);
             }
 
@@ -443,6 +444,12 @@ export async function runAIDiagnosis(
     } catch (err: unknown) {
         if (err instanceof Error && err.name === 'AbortError') return null;
         console.error(`[AI Diagnosis] ${provider} failed:`, err);
+        
+        // Rethrow specialized errors for the UI to display
+        const msg = String(err).toLowerCase();
+        if (msg.includes('429') || msg.includes('quota') || msg.includes('limit') || msg.includes('exhausted')) {
+            throw new Error('RATE_LIMIT');
+        }
         return null;
     }
 }
@@ -508,7 +515,9 @@ Piese necesare estimate: ${c.partKeywords?.join(', ') || 'N/A'}`).join('\n\n')}`
     } catch (err: unknown) {
         console.error(`[AI Parts] failed:`, err);
     }
-    return null;
+
+    // If we're here, all models in the list failed (usually all 429 or 404)
+    throw new Error('QUOTA_EXHAUSTED');
 }
 
 // ── Converter: AIDiagnosticResult → DiagnosticResult ─────────────────────────

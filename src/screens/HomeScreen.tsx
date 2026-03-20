@@ -294,6 +294,13 @@ export default function HomeScreen() {
                 } catch (err: unknown) {
                     if (err instanceof Error && err.name === 'AbortError') {
                         // Handled by timeout or component unmount/typing
+                    } else if (err instanceof Error && err.message === 'RATE_LIMIT') {
+                        setAiError(lp(lang, 
+                            'Limita de utilizare (Quota) atinsă la Google Gemini. Te rugăm să aștepți ~30 secunde și să reîncerci.',
+                            'Quotenlimit erreicht. Bitte warten Sie ~30 Sekunden und versuchen Sie es erneut.',
+                            'Quota limit reached on Google Gemini. Please wait ~30 seconds and try again.'
+                        ));
+                        setAiMode('hidden');
                     } else {
                         setAiError(err instanceof Error ? err.message : String(err));
                         setAiMode('hidden');
