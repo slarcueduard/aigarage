@@ -422,8 +422,8 @@ export async function runAIDiagnosis(
     _fallbackOpenAIKey?: string,
 ): Promise<AIDiagnosticResult | null> {
     try {
-        const openAIKey = import.meta.env.VITE_OPENAI_API_KEY || _fallbackOpenAIKey;
-        const geminiKey = import.meta.env.VITE_AI_API_KEY;
+        const openAIKey = (import.meta.env.VITE_OPENAI_API_KEY || _fallbackOpenAIKey || '').trim().replace(/['"]/g, '');
+        const geminiKey = (import.meta.env.VITE_AI_API_KEY || '').trim().replace(/['"]/g, '');
 
         // 1. Try OpenAI if available
         if (openAIKey && openAIKey.length > 5) {
@@ -472,8 +472,8 @@ export async function runAIPartsSearch(
     currency: 'RON' | 'EUR',
     signal?: AbortSignal,
 ): Promise<AIPartsResult | null> {
-    const openAIKey = import.meta.env.VITE_OPENAI_API_KEY;
-    const geminiKey = import.meta.env.VITE_AI_API_KEY;
+    const openAIKey = (import.meta.env.VITE_OPENAI_API_KEY || '').trim().replace(/['"]/g, '');
+    const geminiKey = (import.meta.env.VITE_AI_API_KEY || '').trim().replace(/['"]/g, '');
 
     const userMessage = `Vă rugăm să analizați următoarele cauze și componente și să furnizați estimări de prețuri și sfaturi:
 ${diagnosis.causes.map((c, i) => `Cauza ${i}: ${c.name}
