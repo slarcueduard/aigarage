@@ -7,164 +7,133 @@
  */
 
 export interface AIDiagnosticResult {
-    /** Main problem identified */
     problemTitle: string;
-    problemTitleRo: string;
-    problemTitleDe: string;
-
-    /** Overall confidence 0-100 */
     confidence: number;
-
-    /** Possible causes, ordered by probability */
-    causes: AICause[];
-
-    /** Detected symptoms / keywords */
-    symptoms: string[];
-
-    /** Suggested DTC codes, if applicable */
-    dtcCodes: string[];
-
-    /** Detected vehicle info from text */
     detectedBrand?: string;
     detectedModel?: string;
     detectedYear?: number;
-}
-
-export interface AICausePart {
-    name: string;
-    priceRon: number;
-    note?: string;
+    dtcCodes: string[];
+    symptoms: string[];
+    causes: AICause[];
 }
 
 export interface AICause {
-    name: string;
-    nameRo: string;
-    nameDe?: string;
+    causeIdentification: string;
     probability: number;
-    checkStep: string;
-    checkStepRo: string;
-    checkStepDe?: string;
+    technicalExplanation: string;
+    executionPlan: string[];
+    partLocation: string;
+    requiredTools: string;
+    quickTests: string[];
+    masterTricks: string;
     partKeywords: string[];
-    estimatedMinutes: number;
-    technicalDetails?: string;
-    technicalDetailsRo?: string;
-    technicalDetailsDe?: string;
-    repairSteps?: string[];
-    repairStepsRo?: string[];
-    repairStepsDe?: string[];
-    forumInsight?: string;
-    forumInsightRo?: string;
-    forumInsightDe: string; // Made required
-    tricksAndTips?: string;
-    tricksAndTipsRo?: string;
-    tricksAndTipsDe?: string;
-    safetyWarnings?: string;
-    safetyWarningsRo?: string;
-    safetyWarningsDe?: string;
-    quickTests?: string[];
-    quickTestsRo?: string[];
-    quickTestsDe?: string[];
-    partsAdvice?: string;
-    partsAdviceRo?: string;
-    partsAdviceDe?: string;
-    /** Brand/model-specific parts with Romanian market prices */
-    partsRo: { name: string; priceRon: number; note?: string }[]; // Made required, inline type
-    partsEn: { name: string; priceEur: number; note?: string }[]; // Added
-    partsDe: { name: string; priceEur: number; note?: string }[]; // Added
-    /** New detailed repair metadata */
-    requiredToolsRo: string[]; // Made required
-    requiredToolsDe: string[]; // Made required
-    componentLocationRo: string; // Made required
-    componentLocationDe: string; // Made required
-    estimatedHoursMin: number; // Added back
-    estimatedHoursMax: number; // Made required
-    requiredTools: string[]; // Added
-    componentLocation: string; // Added
 }
 
-// ── System prompt ─────────────────────────────────────────────────────────────
+/// ── System prompt ─────────────────────────────────────────────────────────────
 function getSystemPrompt(lang: 'ro' | 'de' | 'en') {
-    const languageInstruction = lang === 'ro' 
-        ? 'Răspunde EXCLUSIV în limba ROMÂNĂ. Absolut toate explicațiile și detaliile trebuie să fie în Română.' 
-        : lang === 'de' 
-            ? 'Răspunde EXCLUSIV în limba GERMANĂ (Deutsch). Absolut toate explicațiile und details trebuie să fie în Germană.' 
-            : 'Răspunde EXCLUSIV în limba ENGLEZĂ (English). Absolut toate explicațiile și detaliile trebuie să fie în Engleză.';
+    const targetLang = lang === 'ro' ? 'ROMANIAN (Română)' : lang === 'de' ? 'GERMAN (Deutsch)' : 'ENGLISH';
 
-    return `You are an expert automotive diagnostic engineer. Help mechanics diagnose vehicle problems fast.
+    return `System Prompt 1: The Master Diagnostic Engine
+ROLE: You are an elite, Master Automotive Diagnostic Engineer and OEM Technical Data Architect. You diagnose complex vehicle problems for professional mechanics by following a STRICT DIAGNOSTIC HIERARCHY.
 
-OBLIGATORIU: ${languageInstruction}
-OBLIGATORIU: Toate cheile textuale din JSON TREBUIE să fie ÎN LIMBA SOLICITATĂ: ${lang.toUpperCase()}.
-OBLIGATORIU: Generează ÎNTOTDEAUNA 2-3 cauze posibile.
-IMPORTANT: NU genera sfaturi de piese. Returnează DOAR keywords în 'partKeywords' (IN ENGLISH).
+THE SYSTEM ROUTER (CRITICAL FIRST STEP):
+Before diagnosing, you MUST classify the primary failure mode. Is it Mechanical, Electrical, Hydraulic, Pneumatic, or Hybrid?
 
-Pentru fiecare cauză:
-1. IDENTIFICARE + probabilitate
-2. EXPLICAȚIE tehnică scurtă (cauza defecțiunii)
-3. REPARAȚIE step-by-step (4 pași, începe cu vehiculul menționat)
-4. LOCAȚIE piesă + SCULE necesare
-5. TESTE RAPIDE (3 verificări < 5 min)
-6. TRUCURI practice + SIGURANȚĂ
+EXECUTION RULES (STRICT TECHNICAL DIRECTIVES):
 
-Răspunde EXCLUSIV JSON valid:
+Target Language: ALL text values in your JSON output MUST be in ${targetLang}. JSON keys MUST remain in English.
+
+No Amateur Steps: IT IS STRICTLY FORBIDDEN to use words like "lift the car," "check," "verify," "inspect," or "reprogram" without a specific technical target. Skip to advanced, actionable steps.
+
+Physical Anatomy & Failure Mode: Describe the specific internal failure. (e.g., instead of "Turbo failure," write "The VNT actuator arm is seized due to carbon accumulation," or "The internal planetary gear sun-gear teeth have stripped").
+
+System-Specific Testing (The Balance Rule):
+- If Hydraulic: Provide exact line pressures (e.g., "Measure line pressure at the ABS pump manifold; must hold 120 bar").
+- If Pneumatic: Provide vacuum/boost data (e.g., "Smoke test the intake tract; must hold -20 inHg").
+- If Mechanical: Provide physical tolerances (e.g., "Check turbocharger shaft axial play; must not exceed 0.1mm").
+- If Electrical: Provide specific pin numbers and signals (e.g., "Check Pin 4 on the TCM harness for a 5V reference").
+
+The Tool Mandate: Explicitly name specific hand tools (e.g., "T30 Torx bit", "Oscilloscope"). ONLY IF the failure is Electrical/Hybrid: Name the exact factory/OEM software required (e.g., XENTRY, ISTA, VCDS). If purely mechanical/hydraulic, DO NOT suggest scanning software.
+
+Raw Technical Data: Provide exact torque specs (e.g., "Torque: 15 Nm + 90 degrees") and fluid capacities. If uncertain, state: "Check manual for exact torque."
+
+The Mandatory Adaptation Rule (Master Tricks): If a component is replaced, explicitly state the coding/adaptation required (e.g., "Input the 7-digit injector code into the ECU using XENTRY").
+
+OUTPUT FORMAT: Respond ONLY with valid JSON matching this exact structure:
 {
-  "problemTitle": "...",
-  "confidence": 0-100,
-  "detectedBrand": "...", "detectedModel": "...", "detectedYear": 0,
-  "dtcCodes": [], "symptoms": [],
+  "problemTitle": "Short summary of the issue",
+  "confidence": 85,
+  "detectedBrand": "...",
+  "detectedModel": "...",
+  "detectedYear": 2015,
+  "dtcCodes": ["P0300"],
+  "symptoms": ["List of symptoms"],
   "causes": [
     {
-      "name": "...",
-      "probability": 60,
-      "partKeywords": ["suspension compressor", "air spring"],
-      "checkStep": "...",
-      "technicalDetails": "...",
-      "repairSteps": ["Step 1: ...", "Step 2: ...", "Step 3: ...", "Step 4: ..."],
-      "componentLocation": "...",
-      "requiredTools": ["Basic: ...", "Diag: ..."],
+      "causeIdentification": "Name of the failing component",
+      "probability": 75,
+      "technicalExplanation": "Brief engineering explanation of the failure",
+      "executionPlan": ["Step 1...", "Step 2...", "Step 3...", "Step 4..."],
+      "partLocation": "Exact physical location on the vehicle",
+      "requiredTools": "Specific OEM software or special physical tools (or N/A)",
       "quickTests": ["Test 1", "Test 2", "Test 3"],
-      "tricksAndTips": "...",
-      "safetyWarnings": "..."
+      "masterTricks": "High-level warning, tip, or MUST INCLUDE coding/adaptation procedure if part is replaced",
+      "partKeywords": ["English", "Keywords", "Only"]
     }
   ]
-}
-`;
+}`;
 }
 
 function getPartsSearchPrompt(lang: 'ro' | 'de' | 'en', currency: 'RON' | 'EUR') {
-    const languageInstruction = lang === 'ro' 
-        ? 'Răspunde EXCLUSIV în limba ROMÂNĂ. Absolut toate detaliile pieselor trebuie să fie în Română.' 
-        : lang === 'de' 
-            ? 'Răspunde EXCLUSIV în limba GERMANĂ (Deutsch). Absolut toate detaliile pieselor trebuie să fie în Germană.' 
-            : 'Răspunde EXCLUSIV în limba ENGLEZĂ (English). Absolut toate detaliile pieselor trebuie să fie în Engleză.';
+    const targetLang = lang === 'ro' ? 'ROMANIAN (Română)' : lang === 'de' ? 'GERMAN (Deutsch)' : 'ENGLISH';
 
-    return `You are an expert automotive parts specialist. You receive a diagnostic report containing a list of vehicle problems (causes) and parts keywords.
-Your job is to provide parts buying advice and estimate the cost for the required parts specifically for the specified market.
+    return `System Prompt 3: The Procurement & Upsell Engine
+ROLE: You are an expert Automotive Parts Procurement Specialist. You estimate aftermarket parts costs and provide buying advice to professional mechanics.
 
-OBLIGATORIU: ${languageInstruction}
-OBLIGATORIU: Currency is ${currency}. Calculate prices intuitively for the aftermarket (not dealership).
+EXECUTION RULES:
 
-Răspunde EXCLUSIV JSON valid:
+ALL text values in your JSON output MUST be in ${targetLang}. JSON keys MUST remain in English.
+
+Tiered Pricing Directive: You MUST categorize every required part into three specific tiers:
+
+Cheapest: Lowest-priced budget brand (e.g., Ridex, Stark).
+
+Recommended: High-quality sweet spot (e.g., Bosch, Lemförder, TRW, Pierburg).
+
+Original (OEM): The genuine manufacturer part.
+
+Mechanic Advice (CRITICAL): Provide practical, professional advice. You MUST write an extensive explanation explicitly stating WHICH part brand is best and EXACTLY WHY, referencing brand-specific engineering qualities or known failure rates (e.g., "Avoid budget brands for this MAF sensor; the cheap hot-film elements degrade in 3 months. Stick to Bosch or genuine OEM").
+
+OUTPUT FORMAT: Respond ONLY with valid JSON matching this exact structure:
 {
   "causes": [
     {
       "causeIndex": 0,
-      "partsAdvice": "Sfat din partea ta ca mecanic pentru cumpărarea acestor piese (ex: Evitați brandul X, luați Y. Verificați seria de șasiu).",
+      "partsAdvice": "Professional buying advice...",
       "parts": [
         {
-          "name": "Numele complet al piesei (ex: Compresor suspensie aer)",
-          "price": 1200,
-          "note": "Optional: eMAG/Autokarma/eBay estimate sau detaliu (OEM vs Aftermarket)"
+          "name": "Full name of the required part",
+          "cheapest": {
+            "brand": "Budget brand name",
+            "price": 50,
+            "shop": "Autodoc"
+          },
+          "recommended": {
+            "brand": "Premium aftermarket brand",
+            "price": 85,
+            "shop": "Autokarma"
+          },
+          "original": {
+            "brand": "OEM",
+            "price": 250,
+            "shop": "Dealership"
+          }
         }
       ]
     }
   ]
+}`;
 }
-`;
-}
-
-
-
-
 
 // Best free-tier Gemini models in priority order (best quality first)
 const GEMINI_MODELS = [
@@ -331,14 +300,12 @@ async function callOpenAI(
 
 // ── JSON parser ────────────────────────────────────────────────────────────────
 function parseAIResponse(rawText: string): AIDiagnosticResult {
-    // Robustly extract the JSON object even if the model adds text before/after
-    // e.g. "Here is the diagnosis: {...}" or "```json\n{...}\n```"
     const jsonMatch = rawText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
         throw new Error('AI response is not valid JSON: no JSON object found');
     }
 
-    let parsed: Partial<AIDiagnosticResult> & { causes?: unknown[] };
+    let parsed: any;
     try {
         parsed = JSON.parse(jsonMatch[0]);
     } catch {
@@ -349,59 +316,23 @@ function parseAIResponse(rawText: string): AIDiagnosticResult {
         throw new Error('AI response has no causes');
     }
 
-    // Normalise and fill optional fields with safe defaults
-    const causes: AICause[] = parsed.causes.map((c: unknown) => {
-        const cause = c as Partial<AICause>;
+    const causes: AICause[] = parsed.causes.map((c: any) => {
         return {
-            name: cause.name ?? 'Unknown cause',
-            nameRo: cause.nameRo ?? cause.name ?? 'Cauză necunoscută',
-            nameDe: cause.nameDe ?? cause.name,
-            probability: cause.probability ?? 33,
-            checkStep: cause.checkStep ?? '',
-            checkStepRo: '',
-            checkStepDe: '',
-            partKeywords: cause.partKeywords ?? [],
-            estimatedMinutes: 60,
-            technicalDetails: cause.technicalDetails ?? '',
-            technicalDetailsRo: cause.technicalDetails,
-            technicalDetailsDe: cause.technicalDetails,
-            repairSteps: cause.repairSteps ?? [],
-            repairStepsRo: cause.repairSteps,
-            repairStepsDe: cause.repairSteps,
-            forumInsight: cause.forumInsight ?? '',
-            forumInsightRo: cause.forumInsight,
-            forumInsightDe: cause.forumInsight ?? '',
-            requiredTools: cause.requiredTools ?? [],
-            requiredToolsRo: cause.requiredTools ?? [],
-            requiredToolsDe: cause.requiredTools ?? [],
-            componentLocation: cause.componentLocation ?? '',
-            componentLocationRo: cause.componentLocation ?? '',
-            componentLocationDe: cause.componentLocation ?? '',
-            estimatedHoursMin: 0,
-            estimatedHoursMax: 0,
-            tricksAndTips: cause.tricksAndTips ?? '',
-            tricksAndTipsRo: cause.tricksAndTips ?? '',
-            tricksAndTipsDe: cause.tricksAndTips ?? '',
-            safetyWarnings: cause.safetyWarnings ?? '',
-            safetyWarningsRo: cause.safetyWarnings ?? '',
-            safetyWarningsDe: cause.safetyWarnings ?? '',
-            quickTests: cause.quickTests ?? [],
-            quickTestsRo: cause.quickTests ?? [],
-            quickTestsDe: cause.quickTests ?? [],
-            partsAdvice: cause.partsAdvice ?? '',
-            partsAdviceRo: '',
-            partsAdviceDe: '',
-            partsRo: [],
-            partsEn: [],
-            partsDe: [],
+            causeIdentification: c.causeIdentification ?? c.name ?? 'Unknown cause',
+            probability: c.probability ?? 33,
+            technicalExplanation: c.technicalExplanation ?? c.technicalDetails ?? '',
+            executionPlan: c.executionPlan ?? c.repairSteps ?? [],
+            partLocation: c.partLocation ?? c.componentLocation ?? '',
+            requiredTools: c.requiredTools ?? 'N/A',
+            quickTests: c.quickTests ?? [],
+            masterTricks: c.masterTricks ?? c.tricksAndTips ?? '',
+            partKeywords: c.partKeywords ?? [],
         };
     });
 
     return {
-        problemTitle: parsed.problemTitle ?? parsed.problemTitleRo ?? parsed.problemTitleDe ?? 'Automotive Issue',
-        problemTitleRo: parsed.problemTitleRo ?? parsed.problemTitle ?? 'Problemă auto',
-        problemTitleDe: parsed.problemTitleDe ?? parsed.problemTitle ?? 'Automobil-Problem',
-        confidence: parsed.confidence ?? 60,
+        problemTitle: parsed.problemTitle ?? 'Automotive Issue',
+        confidence: parsed.confidence ?? 85,
         causes,
         symptoms: parsed.symptoms ?? [],
         dtcCodes: parsed.dtcCodes ?? [],
@@ -458,11 +389,24 @@ export async function runAIDiagnosis(
 }
 
 // ── Second stage parts lookup ─────────────────────────────────────────────────
+export interface AIPartTier {
+    brand: string;
+    price: number;
+    shop: string;
+}
+
+export interface AIPartOffer {
+    name: string;
+    cheapest: AIPartTier;
+    recommended: AIPartTier;
+    original: AIPartTier;
+}
+
 export interface AIPartsResult {
     causes: {
         causeIndex: number;
         partsAdvice: string;
-        parts: { name: string; price: number; note?: string }[];
+        parts: AIPartOffer[];
     }[];
 }
 
@@ -476,7 +420,7 @@ export async function runAIPartsSearch(
     const geminiKey = (import.meta.env.VITE_AI_API_KEY || '').trim().replace(/['"]/g, '');
 
     const userMessage = `Vă rugăm să analizați următoarele cauze și componente și să furnizați estimări de prețuri și sfaturi:
-${diagnosis.causes.map((c, i) => `Cauza ${i}: ${c.name}
+${diagnosis.causes.map((c, i) => `Cauza ${i}: ${c.causeIdentification}
 Piese necesare estimate: ${c.partKeywords?.join(', ') || 'N/A'}`).join('\n\n')}`;
 
     // 1. Try OpenAI first
@@ -551,6 +495,125 @@ Piese necesare estimate: ${c.partKeywords?.join(', ') || 'N/A'}`).join('\n\n')}`
     return null;
 }
 
+// ── Quick Test Elaboration ─────────────────────────────────────────────────────
+// Called when mechanic taps a Quick Test pill — returns detailed procedure steps.
+function getQuickTestPrompt(lang: 'ro' | 'de' | 'en') {
+    const targetLang = lang === 'ro' ? 'ROMANIAN (Română)' : lang === 'de' ? 'GERMAN (Deutsch)' : 'ENGLISH';
+    return `System Prompt 2: The Tactical Execution Engine
+ROLE: You are an elite Master Automotive Diagnostic Engineer. A mechanic has selected a specific diagnostic test and needs a precise, step-by-step execution procedure.
+
+EXECUTION RULES:
+
+ALL text values in your JSON output MUST be in ${targetLang}. JSON keys MUST remain in English.
+
+Be extremely specific: Include exact pin numbers, expected voltage/resistance values, special tools, and pass/fail criteria.
+
+Never write generic steps like "check the sensor" or "inspect wiring". Give raw, actionable technical steps.
+
+Metric Enforcement:
+- If the test is electrical: Give exact multimeter/oscilloscope settings and expected readings (Volts/Ohms/Amps).
+- If the test is hydraulic/pneumatic: Give exact measurement values (Bar/PSI) and the specific tool setup (e.g., "Connect 150-bar pressure gauge to the tandem pump test port").
+- If the test is mechanical: Give exact measurement values (mm/inches) using micrometers or dial indicators.
+
+OUTPUT FORMAT: Respond ONLY with valid JSON matching this exact structure:
+{
+  "testTitle": "Full name of the test",
+  "estimatedTime": "3-5 minutes",
+  "requiredTools": "Specific tools needed (e.g., Digital Multimeter, Oscilloscope, Smoke Machine)",
+  "steps": [
+    "Step 1: ...",
+    "Step 2: ...",
+    "Step 3: ..."
+  ],
+  "passResult": "What reading/result indicates the component is GOOD",
+  "failResult": "What reading/result indicates the component is FAULTY and what to replace"
+}`;
+}
+
+export interface QuickTestProcedure {
+    testTitle: string;
+    estimatedTime: string;
+    requiredTools: string;
+    steps: string[];
+    passResult: string;
+    failResult: string;
+}
+
+export async function runQuickTestElaboration(
+    quickTestDescription: string,
+    lang: 'ro' | 'de' | 'en',
+    vehicleContext?: string,
+): Promise<QuickTestProcedure | null> {
+    const openAIKey = (import.meta.env.VITE_OPENAI_API_KEY || '').trim().replace(/['\"]/g, '');
+    const geminiKey = (import.meta.env.VITE_AI_API_KEY || '').trim().replace(/['\"]/g, '');
+
+    const userMessage = `Generate a detailed diagnostic procedure for this test: "${quickTestDescription}"${vehicleContext ? `\nVehicle context: ${vehicleContext}` : ''}`;
+
+    // 1. Try OpenAI first
+    if (openAIKey && openAIKey.length > 5) {
+        try {
+            const response = await fetch('/api/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${openAIKey}`,
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4o-mini',
+                    temperature: 0.1,
+                    response_format: { type: 'json_object' },
+                    messages: [
+                        { role: 'system', content: getQuickTestPrompt(lang) },
+                        { role: 'user', content: userMessage },
+                    ],
+                }),
+            });
+            if (response.ok) {
+                const data = await response.json();
+                return JSON.parse(data.choices[0].message.content) as QuickTestProcedure;
+            }
+        } catch (err) {
+            console.warn('[Quick Test] OpenAI failed, falling back to Gemini:', err);
+        }
+    }
+
+    // 2. Try Gemini
+    if (geminiKey && geminiKey.length > 5) {
+        for (const modelName of GEMINI_MODELS) {
+            try {
+                const response = await fetch(
+                    `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKey}`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            systemInstruction: { parts: [{ text: getQuickTestPrompt(lang) }] },
+                            contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+                            generationConfig: {
+                                temperature: 0.1,
+                                maxOutputTokens: 1200,
+                                responseMimeType: 'application/json',
+                            },
+                        }),
+                    },
+                );
+                if (!response.ok) {
+                    if (response.status === 404 || response.status === 400 || response.status === 429) continue;
+                    throw new Error(`Gemini ${response.status}`);
+                }
+                const data = await response.json();
+                const rawText: string = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+                const match = rawText.match(/\{[\s\S]*\}/);
+                if (match) return JSON.parse(match[0]) as QuickTestProcedure;
+            } catch (err: unknown) {
+                if (err instanceof Error && err.name === 'AbortError') throw err;
+                continue;
+            }
+        }
+    }
+    return null;
+}
+
 // ── Converter: AIDiagnosticResult → DiagnosticResult ─────────────────────────
 export function aiResultToDiagnosticResult(
     ai: AIDiagnosticResult,
@@ -563,44 +626,44 @@ export function aiResultToDiagnosticResult(
         vehicle,
         timestamp: Date.now(),
         causes: ai.causes.map(c => ({
-            name: c.name,
-            nameRo: c.nameRo,
+            name: c.causeIdentification,
+            nameRo: c.causeIdentification,
+            nameDe: c.causeIdentification,
             probability: c.probability,
-            checkStep: c.checkStep,
-            checkStepRo: c.checkStepRo,
+            checkStep: '',
+            checkStepRo: '',
+            checkStepDe: '',
             partKeywords: c.partKeywords,
-            estimatedMinutes: c.estimatedMinutes,
-            technicalDetails: c.technicalDetails,
-            technicalDetailsRo: c.technicalDetailsRo,
-            repairSteps: c.repairSteps,
-            repairStepsRo: c.repairStepsRo,
-            partsRo: c.partsRo,
-            requiredToolsRo: c.requiredToolsRo,
-            componentLocationRo: c.componentLocationRo,
-            estimatedHoursMin: c.estimatedHoursMin,
-            estimatedHoursMax: c.estimatedHoursMax,
-            nameDe: c.nameDe,
-            checkStepDe: c.checkStepDe,
-            technicalDetailsDe: c.technicalDetailsDe,
-            repairStepsDe: c.repairStepsDe,
-            forumInsight: c.forumInsight ?? '',
-            forumInsightRo: c.forumInsightRo,
-            forumInsightDe: c.forumInsightDe,
-            requiredToolsDe: c.requiredToolsDe,
-            componentLocationDe: c.componentLocationDe,
-            requiredTools: c.requiredTools, // Added
-            componentLocation: c.componentLocation, // Added
-            partsEn: c.partsEn, // Added
-            partsDe: c.partsDe, // Added
-            tricksAndTips: c.tricksAndTips,
-            tricksAndTipsRo: c.tricksAndTipsRo,
-            tricksAndTipsDe: c.tricksAndTipsDe,
-            safetyWarnings: c.safetyWarnings,
-            safetyWarningsRo: c.safetyWarningsRo,
-            safetyWarningsDe: c.safetyWarningsDe,
+            estimatedMinutes: 60,
+            technicalDetails: c.technicalExplanation,
+            technicalDetailsRo: c.technicalExplanation,
+            technicalDetailsDe: c.technicalExplanation,
+            repairSteps: c.executionPlan,
+            repairStepsRo: c.executionPlan,
+            repairStepsDe: c.executionPlan,
+            requiredTools: [c.requiredTools],
+            requiredToolsRo: [c.requiredTools],
+            requiredToolsDe: [c.requiredTools],
+            componentLocation: c.partLocation,
+            componentLocationRo: c.partLocation,
+            componentLocationDe: c.partLocation,
+            estimatedHoursMin: 0,
+            estimatedHoursMax: 0,
+            tricksAndTips: c.masterTricks,
+            tricksAndTipsRo: c.masterTricks,
+            tricksAndTipsDe: c.masterTricks,
+            safetyWarnings: '',
+            safetyWarningsRo: '',
+            safetyWarningsDe: '',
             quickTests: c.quickTests,
-            quickTestsRo: c.quickTestsRo,
-            quickTestsDe: c.quickTestsDe,
+            quickTestsRo: c.quickTests,
+            quickTestsDe: c.quickTests,
+            partsRo: [],
+            partsEn: [],
+            partsDe: [],
+            forumInsight: '',
+            forumInsightRo: '',
+            forumInsightDe: ''
         })),
     };
 }

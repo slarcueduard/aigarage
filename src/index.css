@@ -2,31 +2,32 @@
 
 /* ─── CSS CUSTOM PROPERTIES ──────────────────────────────────────────────────── */
 :root {
-  /* Core palette — bright, high-contrast, sunlight-readable */
-  --color-bg: #F5F7FA;
+  /* Core palette — Industrial B2B High Contrast */
+  --color-bg: #F9FAFB; /* Gray 50 */
   --color-surface: #FFFFFF;
-  --color-surface-2: #EEF1F6;
-  --color-border: #D4D9E3;
-  --color-border-light: #E8EBF0;
+  --color-surface-2: #F3F4F6; /* Gray 100 */
+  --color-border: #111827; /* Gray 900 - brutalist borders */
+  --color-border-light: #374151; /* Gray 700 */
 
-  /* Accent — strong blue, visible in any light */
-  --color-primary: #1565C0;
-  --color-primary-dark: #0D47A1;
-  --color-primary-lite: #E3EAF8;
+  /* Accent — Milwaukee Red (#DB0020) and Safety Yellow (#FFD700) */
+  --color-primary: #DB0020;
+  --color-primary-dark: #990016;
+  --color-primary-lite: #FEE2E2;
+  --color-accent: #FFD700;
 
-  /* Status/feedback colors */
-  --color-success: #1B7F3A;
-  --color-success-bg: #E6F4EC;
-  --color-warning: #C17C00;
-  --color-warning-bg: #FFF3DC;
-  --color-danger: #C62828;
-  --color-danger-bg: #FDECEA;
+  /* Status/feedback colors - stark */
+  --color-success: #15803D; /* Green 700 */
+  --color-success-bg: #DCFCE7;
+  --color-warning: #B45309; /* Amber 700 */
+  --color-warning-bg: #FEF3C7;
+  --color-danger: #DB0020; /* Milwaukee Red */
+  --color-danger-bg: #FEE2E2;
 
-  /* Text hierarchy */
-  --color-text: #0D1117;
-  --color-text-2: #3D4554;
-  --color-text-3: #6B7280;
-  --color-text-disabled: #9BA3AF;
+  /* Text hierarchy - High legibility */
+  --color-text: #111827; /* Gray 900 Heavy Charcoal */
+  --color-text-2: #374151; /* Gray 700 */
+  --color-text-3: #4B5563; /* Gray 600 */
+  --color-text-disabled: #9CA3AF;
   --color-on-primary: #FFFFFF;
 
   /* Brand colors for tags */
@@ -48,30 +49,32 @@
   --cat-motor: #37474F;
   --cat-senzori: #00838F;
 
-  /* Spacing */
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
-  --space-2xl: 48px;
+  /* Spacing - Increased for Fat Fingers */
+  --space-xs: 6px;
+  --space-sm: 12px;
+  --space-md: 20px;
+  --space-lg: 32px;
+  --space-xl: 48px;
+  --space-2xl: 64px;
 
   /* Layout */
   --app-max-width: 820px;
-  --nav-height: 68px;
-  --header-height: 60px;
-  --border-radius: 12px;
-  --border-radius-sm: 8px;
-  --border-radius-lg: 16px;
+  --nav-height: 72px;
+  --header-height: 64px;
+  
+  /* Brutalist Shapes - No curves */
+  --border-radius: 0px;
+  --border-radius-sm: 0px;
+  --border-radius-lg: 0px;
 
-  /* Shadows — crisp, no blur bloat */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.10);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.10);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  /* Shadows — Brutalist solid black offets, no blur */
+  --shadow-sm: 2px 2px 0px #111827;
+  --shadow-md: 4px 4px 0px #111827;
+  --shadow-lg: 8px 8px 0px #111827;
 
   /* Transitions */
-  --transition: 150ms ease;
-  --transition-slow: 250ms ease;
+  --transition: 0ms; /* Snappy, no delays for industrial speed */
+  --transition-slow: 100ms;
 
   /* Z-indices */
   --z-overlay: 100;

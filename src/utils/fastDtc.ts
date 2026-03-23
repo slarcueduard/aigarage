@@ -417,53 +417,31 @@ export const COMMON_DTCS = [
     }
 ];
 
-export function getFastDtcDiagnostic(dtcCode: string) {
+export function getFastDtcDiagnostic(dtcCode: string, lang: 'ro' | 'de' | 'en' = 'ro') {
     const rawCode = dtcCode.toUpperCase().trim();
     const entry = COMMON_DTCS.find(c => c.code === rawCode);
     if (!entry) return null;
 
     const causes = entry.causes.map(c => {
         return {
-            name: c.name,
-            nameRo: c.nameRo,
-            nameDe: c.nameDe,
+            causeIdentification: lang === 'en' ? (c as any).nameEn || c.name : lang === 'de' ? c.nameDe || c.name : c.nameRo || c.name,
             probability: c.probability,
-            checkStep: c.checkStep,
-            checkStepRo: c.checkStepRo,
-            checkStepDe: c.checkStepDe,
-            repairSteps: c.repairSteps,
-            repairStepsRo: c.repairStepsRo,
-            repairStepsDe: c.repairStepsDe,
-            technicalDetails: c.technicalDetails,
-            technicalDetailsRo: c.technicalDetailsRo,
-            technicalDetailsDe: c.technicalDetailsDe,
-            forumInsight: '',
-            forumInsightRo: '',
-            forumInsightDe: '',
-            requiredToolsRo: [],
-            requiredToolsDe: [],
-            requiredTools: [], // Added
-            componentLocationRo: '',
-            componentLocationDe: '',
-            componentLocation: '', // Added
-            estimatedHoursMin: (c as any).estimatedMinutes ? (c as any).estimatedMinutes / 60 : 0,
-            estimatedHoursMax: (c as any).estimatedMinutes ? ((c as any).estimatedMinutes + 30) / 60 : 0,
-            partsRo: (c as any).partsRo || [],
-            partsEn: (c as any).partsRo ? (c as any).partsRo.map((p: any) => ({ name: p.name, priceEur: Math.round(p.priceRon / 5), note: p.note })) : [],
-            partsDe: (c as any).partsRo ? (c as any).partsRo.map((p: any) => ({ name: p.name, priceEur: Math.round(p.priceRon / 5), note: p.note })) : [],
-            partKeywords: (c as any).partKeywords || [],
-            estimatedMinutes: (c as any).estimatedMinutes || 0,
+            technicalExplanation: lang === 'en' ? (c as any).technicalDetailsEn || c.technicalDetails : lang === 'de' ? c.technicalDetailsDe || c.technicalDetails : c.technicalDetailsRo || c.technicalDetails,
+            executionPlan: lang === 'en' ? (c as any).repairStepsEn || c.repairSteps : lang === 'de' ? c.repairStepsDe || c.repairSteps : c.repairStepsRo || c.repairSteps,
+            partLocation: (c as any).componentLocation || '',
+            requiredTools: ((c as any).requiredTools || []).join(', ') || 'N/A',
+            quickTests: [],
+            masterTricks: lang === 'en' ? (c as any).checkStepEn || c.checkStep : lang === 'de' ? c.checkStepDe || c.checkStep : c.checkStepRo || c.checkStep,
+            partKeywords: c.partKeywords || []
         };
     });
 
     const result: AIDiagnosticResult = {
-        problemTitle: `Fault Code: ${entry.code}`,
-        problemTitleRo: `Cod de eroare: ${entry.code}`,
-        problemTitleDe: `Fehlercode: ${entry.code}`,
+        problemTitle: lang === 'en' ? `Fault Code: ${entry.code}` : lang === 'de' ? `Fehlercode: ${entry.code}` : `Cod de eroare: ${entry.code}`,
         confidence: 95,
         dtcCodes: [entry.code],
         symptoms: [],
-        causes: causes
+        causes: causes as any
     };
 
     return result;

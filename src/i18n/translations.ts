@@ -1,4 +1,4 @@
-// Romanian/English/German UI translations for AI Garage OS
+// Romanian/English/German UI translations for fastDiag
 // Usage: t('key', lang) or use the useLang() hook
 
 type Lang = 'ro' | 'en' | 'de';

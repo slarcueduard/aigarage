@@ -166,7 +166,7 @@ function norm(text: string): string {
         .replace(/[\u0300-\u036f]/g, '');
 }
 
-export function getFastDiagnostic(text: string): AIDiagnosticResult | null {
+export function getFastDiagnostic(text: string, lang: 'ro' | 'de' | 'en' = 'ro'): AIDiagnosticResult | null {
     if (text.trim().length < 5) return null;
     
     const parsed = parseRomanianProblem(text);
@@ -185,53 +185,38 @@ export function getFastDiagnostic(text: string): AIDiagnosticResult | null {
     const modelName = parsed.detectedModel ? ` ${parsed.detectedModel}` : '';
     const carContext = (brandName || modelName) ? `${brandName}${modelName}` : 'Mașinii';
 
-    const lang = parsed.detectedLang || 'ro';
+    // Use the explicitly selected UI language — never override with text-detected language
+    const currentLang = lang;
     
     // For English, use the English base fields for the "Ro"-suffixed fields too
     // since the frontend displays the "Ro" fields if the user language matches the input language
-    const causeName = lang === 'en' ? matchedRule.cause.name : lang === 'de' ? (matchedRule.cause as any).nameDe || matchedRule.cause.name : matchedRule.cause.nameRo;
-    const techDetails = lang === 'en' ? matchedRule.cause.technicalDetails : lang === 'de' ? 'Mögliches Problem mit ' + carContext.trim() + '. ' + (matchedRule.cause as any).technicalDetailsDe || matchedRule.cause.technicalDetails : `Posibilă problemă specifică ${carContext.trim()}. ${matchedRule.cause.technicalDetailsRo}`;
-    const repSteps = lang === 'en' ? matchedRule.cause.repairSteps : lang === 'de' ? (matchedRule.cause as any).repairStepsDe || matchedRule.cause.repairSteps : matchedRule.cause.repairStepsRo;
-    const chkStep = lang === 'en' ? matchedRule.cause.checkStep : lang === 'de' ? (matchedRule.cause as any).checkStepDe || matchedRule.cause.checkStep : matchedRule.cause.checkStepRo;
-    const probTitle = lang === 'en' ? `Fast Diag: ${matchedRule.cause.name}` : lang === 'de' ? `Schnelle Diag: ${(matchedRule.cause as any).nameDe || matchedRule.cause.name}` : `Diagnoză Rapidă: ${matchedRule.cause.nameRo}`;
+    const causeName = currentLang === 'en' ? matchedRule.cause.name : currentLang === 'de' ? (matchedRule.cause as any).nameDe || matchedRule.cause.name : matchedRule.cause.nameRo;
+    const techDetails = currentLang === 'en' ? matchedRule.cause.technicalDetails : currentLang === 'de' ? 'Mögliches Problem mit ' + carContext.trim() + '. ' + (matchedRule.cause as any).technicalDetailsDe || matchedRule.cause.technicalDetails : `Posibilă problemă specifică ${carContext.trim()}. ${matchedRule.cause.technicalDetailsRo}`;
+    const repSteps = currentLang === 'en' ? matchedRule.cause.repairSteps : currentLang === 'de' ? (matchedRule.cause as any).repairStepsDe || matchedRule.cause.repairSteps : matchedRule.cause.repairStepsRo;
+    const chkStep = currentLang === 'en' ? matchedRule.cause.checkStep : currentLang === 'de' ? (matchedRule.cause as any).checkStepDe || matchedRule.cause.checkStep : matchedRule.cause.checkStepRo;
+    const probTitle = currentLang === 'en' ? `Fast Diag: ${matchedRule.cause.name}` : currentLang === 'de' ? `Schnelle Diag: ${(matchedRule.cause as any).nameDe || matchedRule.cause.name}` : `Diagnoză Rapidă: ${matchedRule.cause.nameRo}`;
 
 
     return {
-        problemTitle: `Fast Diag: ${matchedRule.cause.name}`,
-        problemTitleRo: probTitle,
-        problemTitleDe: lang === 'de' ? `SchnellDiag: ${matchedRule.cause.nameRo}` : `SchnellDiag: ${matchedRule.cause.name}`,
+        problemTitle: probTitle,
         confidence: matchedRule.cause.probability - 15, // Lower than AI confidence as it's a guess
         detectedBrand: parsed.detectedBrand ?? undefined,
         detectedModel: parsed.detectedModel ?? undefined,
         detectedYear: parsed.detectedYear ?? undefined,
+        dtcCodes: [],
+        symptoms: matchedRule.keywords.filter(k => n.includes(norm(k))),
         causes: [
             {
-                ...matchedRule.cause,
-                nameRo: causeName,
-                nameDe: (matchedRule.cause as any).nameDe || matchedRule.cause.name,
-                checkStepRo: chkStep,
-                checkStepDe: (matchedRule.cause as any).checkStepDe || matchedRule.cause.checkStep,
-                repairStepsRo: repSteps,
-                repairStepsDe: (matchedRule.cause as any).repairStepsDe || matchedRule.cause.repairSteps,
-                technicalDetailsRo: techDetails,
-                technicalDetailsDe: (matchedRule.cause as any).technicalDetailsDe || matchedRule.cause.technicalDetails,
-                forumInsightDe: (matchedRule.cause as any).forumInsightDe || '',
-                partsRo: (matchedRule.cause as any).partsRo || [],
-                partsEn: (matchedRule.cause as any).partsRo ? (matchedRule.cause as any).partsRo.map((p: any) => ({ name: p.name, priceEur: Math.round(p.priceRon / 5), note: p.note })) : [],
-                partsDe: (matchedRule.cause as any).partsRo ? (matchedRule.cause as any).partsRo.map((p: any) => ({ name: p.name, priceEur: Math.round(p.priceRon / 5), note: p.note })) : [],
-                requiredToolsRo: (matchedRule.cause as any).requiredToolsRo || [],
-                requiredToolsDe: (matchedRule.cause as any).requiredToolsDe || [],
-                componentLocationRo: (matchedRule.cause as any).componentLocationRo || '',
-                componentLocationDe: (matchedRule.cause as any).componentLocationDe || '',
-                requiredTools: (matchedRule.cause as any).requiredTools || [], // Added
-                componentLocation: (matchedRule.cause as any).componentLocation || '', // Added
-                estimatedHoursMin: (matchedRule.cause as any).estimatedHoursMin || 0,
-                estimatedHoursMax: (matchedRule.cause as any).estimatedHoursMax || 0,
-                partKeywords: (matchedRule.cause as any).partKeywords || [],
-                estimatedMinutes: (matchedRule.cause as any).estimatedMinutes || 0,
+                causeIdentification: causeName,
+                probability: matchedRule.cause.probability,
+                technicalExplanation: techDetails,
+                executionPlan: repSteps,
+                partLocation: (matchedRule.cause as any).componentLocation || '',
+                requiredTools: ((matchedRule.cause as any).requiredTools || []).join(', ') || 'N/A',
+                quickTests: [],
+                masterTricks: chkStep,
+                partKeywords: (matchedRule.cause as any).partKeywords || []
             }
-        ],
-        symptoms: matchedRule.keywords.filter(k => n.includes(norm(k))),
-        dtcCodes: []
+        ]
     };
 }

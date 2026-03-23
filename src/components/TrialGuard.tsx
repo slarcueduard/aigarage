@@ -35,13 +35,13 @@ export default function TrialGuard({ children }: TrialGuardProps) {
             </h1>
             
             <p style={{ fontSize: '1rem', color: 'var(--color-text-2)', lineHeight: 1.6, maxWidth: 400, marginBottom: 32 }}>
-                Cele 7 zile de testare gratuită pentru <strong>AI Garage</strong> au luat sfârșit. 
+                Cele 7 zile de testare gratuită pentru <strong>fastDiag</strong> au luat sfârșit. 
                 Pentru a continua să folosești platforma la capacitate maximă, te rugăm să ne contactezi.
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%', maxWidth: 300 }}>
                 <a 
-                    href="https://velocityautomationai.com/"
+                    href="https://fastdiag.velocityautomationai.com/"
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{

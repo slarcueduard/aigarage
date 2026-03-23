@@ -8,8 +8,8 @@ import { t } from '../i18n/translations';
 import type { Lang } from '../i18n/translations';
 import { parseRomanianProblem } from '../utils/textParser';
 
-import { runAIDiagnosis, aiResultToDiagnosticResult, runAIPartsSearch } from '../utils/aiDiagnostic';
-import type { AIPartsResult } from '../utils/aiDiagnostic';
+import { runAIDiagnosis, aiResultToDiagnosticResult, runAIPartsSearch, runQuickTestElaboration } from '../utils/aiDiagnostic';
+import type { AIPartsResult, QuickTestProcedure } from '../utils/aiDiagnostic';
 import PartsSection from '../components/PartsSection';
 import { getFastDiagnostic } from '../utils/fastDiagnostic';
 import { getFastDtcDiagnostic, COMMON_DTCS } from '../utils/fastDtc';
@@ -65,6 +65,9 @@ function ConfidenceBadge({ value, aiMode, lang }: { value: number; aiMode: 'ai' 
 // ── Quick tag chips ───────────────────────────────────────────────────────────
 function QuickTags({ lang, onSelect }: { lang: Lang; onSelect: (q: string) => void }) {
     const tags = [
+        { label: lp(lang, '💡 Martor Motor', '💡 Motorkontrollleuchte', '💡 Check Engine'), query: lp(lang, 'martor motor aprins in bord', 'Motorkontrollleuchte leuchtet', 'check engine light on dashboard') },
+        { label: lp(lang, '🛑 Martor Frână', '🛑 Bremswarnleuchte', '🛑 Brake Warning'), query: lp(lang, 'martor frana aprins rosu', 'Bremswarnleuchte leuchtet rot', 'brake warning light on') },
+        { label: lp(lang, '🔋 Martor Baterie', '🔋 Batteriewarnleuchte', '🔋 Battery'), query: lp(lang, 'martor baterie aprins in bord', 'Batteriewarnleuchte leuchtet', 'battery/charging warning light') },
         { label: lp(lang, '🔥 Fum negru', '🔥 Schwarzer Rauch', '🔥 Black smoke'), query: lp(lang, 'motorul scoate fum negru', 'Motor stößt schwarzen Rauch aus', 'engine black smoke') },
         { label: lp(lang, '⚡ Nu pornește', '⚡ Startet nicht', '⚡ Won\'t start'), query: lp(lang, 'masina nu porneste', 'Auto startet nicht', 'car won\'t start') },
         { label: lp(lang, '🛢️ Pierde ulei', '🛢️ Ölverlust', '🛢️ Oil leak'), query: lp(lang, 'pierde ulei pe jos', 'Öl verliert unten', 'oil leak under car') },
@@ -129,6 +132,10 @@ export default function HomeScreen() {
     // Per-cause AI parts: loaded asynchronously after main diagnosis
     const [aiPartsByCause, setAiPartsByCause] = useState<AIPartsResult | null>(null);
 
+    const [expandedQuickTest, setExpandedQuickTest] = useState<{
+        idx: number; causeIdx: number; loading: boolean; procedure: QuickTestProcedure | null;
+    } | null>(null);
+
     const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
     const aiAbort = useRef<AbortController | null>(null);
     const partsAbort = useRef<AbortController | null>(null);
@@ -149,6 +156,7 @@ export default function HomeScreen() {
         setRevealAi(false);
         setAiPartsByCause(null);
         setPartsLoading(false);
+        setExpandedQuickTest(null);
 
         if (text.trim().length < 4 && !selectedFastDtc && !selectedBrand && !selectedModel) {
             setAiMode('hidden');
@@ -162,7 +170,7 @@ export default function HomeScreen() {
         setAiError(null);
 
         // Run fast rules immediately for instant feedback
-        const fastDiag = getFastDiagnostic(text);
+        const fastDiag = getFastDiagnostic(text, lang);
         if (fastDiag) {
             const p = parseRomanianProblem(text);
             const explicitBrand = selectedBrand || p.detectedBrand || (fastDiag.detectedBrand !== 'Unknown' ? fastDiag.detectedBrand : null) || 'Unknown';
@@ -178,7 +186,7 @@ export default function HomeScreen() {
             setFastResult(res);
             setRevealAi(true); // Show offline result instantly
         } else if (selectedFastDtc && text.trim().length < 4) {
-            const dtcDiag = getFastDtcDiagnostic(selectedFastDtc);
+            const dtcDiag = getFastDtcDiagnostic(selectedFastDtc, lang);
             if (dtcDiag) {
                 const aiVehicle: Vehicle = {
                     vin: `AI-${Date.now()}`,
@@ -238,7 +246,47 @@ export default function HomeScreen() {
                         selectedModel || p.detectedModel || undefined,
                         selectedYear || (p.detectedYear ? String(p.detectedYear) : undefined),
                         aiAbort.current.signal,
-                        '',
+                        `ROLE: You are an elite, Master Automotive Diagnostic Engineer and OEM Technical Data Architect. You diagnose complex vehicle problems for professional mechanics by following a STRICT DIAGNOSTIC HIERARCHY: 
+1. Physical Anatomy & Failure Mode (What actually broke physically?)
+2. Mechanical Inspection & Measurement (Tolerances, Pressures, Play)
+3. Electrical Signal & Pin-Outs (Data, Volts, Resistance)
+4. Adaptation & Coding (Master Tricks)
+
+EXECUTION RULES (STRICT TECHNICAL DIRECTIVES):
+
+Target Language: ALL text values in your JSON output MUST be in ${lang}.
+
+No Generic/Amateur Steps: IT IS STRICTLY FORBIDDEN to use words like "check," "verify," "inspect," or "reprogram" without a specific technical target. NEVER say "Check for error codes" or "Verify connections." Skip to advanced, actionable steps.
+
+Raw Technical Data (Mandatory): Include specific technical data. Provide exact torque specs (e.g., "Torque: 15 Nm + 90 degrees"), exact fluid capacities, or OEM tolerances. If uncertain, state: "Check manual for exact torque."
+
+Physical Anatomy & Failure Mode (CRITICAL): Your 'technicalExplanation' MUST describe the specific internal mechanical or electrical failure of the component. (e.g., instead of "Turbo failure," write "The VNT actuator arm is seized due to carbon accumulation," or "The internal planetary gear sun-gear teeth have stripped").
+
+The "Diagnostic & Physical Tools" Master Rule: You must provide a comprehensive, highly specific list of tools required for this exact repair based on the identified vehicle brand/model. 
+1. If computer diagnostics are needed, you MUST name the exact factory/OEM software (e.g., XENTRY, ISTA, VCDS, TechStream) AND at least one high-end aftermarket alternative capable of the required coding/adaptation (e.g., Autel MaxiSYS, Launch X431, Topdon). NEVER use the term "scanner" or "scan tool."
+2. You MUST explicitly name the specific physical hand tools required (e.g., "T30 Torx bit", "10mm deep socket", "E12 Torx socket", "Digital Multimeter", "Oscilloscope"). 
+
+The Mechanical Precision & Physical Inspection Mandate: If the user mentions "noise" (zgomot), "vibration," "smoke," "leak," or "play," your execution plan MUST prioritize mechanical/physical checks as Step 1 and 2. 
+- Provide exact tolerances (e.g., "Check turbocharger shaft axial play; must not exceed 0.1mm").
+- For physical noises, your first step MUST be physical disassembly and component inspection (e.g., "Remove the actuator cover and check the plastic gears for stripped teeth").
+- Provide exact torque specs for any component mentioned (e.g., "Tighten glow plugs to 15 Nm").
+
+The Pin-Out & Signal Mandate: If the failure is electronic, you MUST provide specific pin numbers and expected signals.
+- Provide exact pin numbers (e.g., "Check Pin 4 on the door module 20-pin connector for a 12V pulse").
+- Provide expected values (e.g., "CAN-HI should be 2.5V - 3.5V").
+
+The Multi-Symptom Correlation Rule: If multiple systems fail at once (e.g., door noise + light out + sensor error), investigate common failure points FIRST. 
+- Inspect shared wiring harnesses (e.g., "Inspect the rubber bellows between the door and pillar for broken wires") or common ground points (e.g., "W2 ground point on the rear chassis"). 
+
+The Mandatory Adaptation Rule (Master Tricks): If a component is replaced, you MUST explicitly state the coding/adaptation required (e.g., "Input the 7-digit injector code into the ECU using XENTRY").
+
+Model-Specific Precision: If a Model is provided, your diagnosis MUST be hyper-specific. Identify known pattern failures (e.g., BMW N54 HPFP, VW DSG Mechatronics).
+
+Zero Fluff Tolerance: Every step must provide technical leverage.
+
+Master Tricks: Must contain dealership-level pitfalls and mandatory adaptations. AT LEAST 2-3 sentences of vehicle-specific quirks.
+
+Structure: Always generate 2-3 highly probable causes.`,
                     );
                     clearTimeout(timeoutId);
 
@@ -398,10 +446,10 @@ export default function HomeScreen() {
                         width: 38, height: 38, background: 'var(--color-primary)',
                         borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: '1.25rem', boxShadow: '0 4px 10px rgba(21,101,192,0.2)',
-                    }}>🔧</div>
+                    }}>⚡</div>
                     <div>
-                        <div style={{ fontSize: '1.05rem', fontWeight: 950, color: 'var(--color-text)', lineHeight: 1.1 }}>
-                            {settings.name || 'Garage OS'}
+                        <div style={{ fontSize: '1.05rem', fontWeight: 950, color: 'var(--color-text)' }}>
+                            {settings.name || 'fastDiag'}
                         </div>
                         <div style={{ fontSize: '0.72rem', color: 'var(--color-text-3)', fontWeight: 600, marginTop: 1 }}>
                             {todayCount > 0
@@ -418,7 +466,7 @@ export default function HomeScreen() {
                         <div style={{ 
                             marginLeft: 12, padding: '4px 10px', borderRadius: 8, 
                             background: daysLeft <= 2 ? '#FEF2F2' : '#F0F9FF',
-                            border: `1px solid ${daysLeft <= 2 ? '#FEE2E2' : '#E0F2FE'}`,
+                            border: `1px solid ${daysLeft <= 2 ? '#FEE2F2' : '#E0F2FE'}`,
                             display: 'flex', alignItems: 'center', gap: 6
                         }}>
                             <div style={{ width: 6, height: 6, borderRadius: 3, background: daysLeft <= 2 ? '#EF4444' : '#0EA5E9' }} />
@@ -557,7 +605,7 @@ export default function HomeScreen() {
                              letterSpacing: '0.02em',
                              textTransform: 'uppercase'
                          }}>
-                             {typing ? lp(lang, 'Analizez datele...', 'Daten werden analysiert...', 'Analyzing data...') : lp(lang, 'AI prepară soluția...', 'KI bereitet Lösung vor...', 'AI is preparing solution...')}
+                             {typing ? lp(lang, 'Se analizează...', 'Wird analysiert...', 'Analyzing...') : lp(lang, 'Rezultate în curs de încărcare...', 'Ergebnisse werden geladen...', 'Results loading...')}
                          </span>
                     </div>
                 )}
@@ -661,19 +709,120 @@ export default function HomeScreen() {
                                                                 </div>
                                                             )}
 
-                                                            {/* 3. Quick Diagnostic Tests (New!) */}
+                                                            {/* 3. Quick Diagnostic Tests */}
                                                             {quickTests.length > 0 && (
                                                                 <div style={{ marginBottom: 14 }}>
                                                                     <div style={{ fontSize: '0.65rem', fontWeight: 900, color: '#6366F1', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
                                                                         <Zap size={10} color="#6366F1" />
                                                                         {lp(lang, 'Teste Rapide (< 5 min)', 'Schnelltests (< 5 Min.)', 'Quick Tests (< 5 min)')}
                                                                     </div>
-                                                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                                                                        {quickTests.map((qt: string, qti: number) => (
-                                                                            <div key={qti} style={{ padding: '6px 10px', background: '#F1F5F9', border: '1px solid #E2E8F0', borderRadius: 8, fontSize: '0.72rem', color: '#475569', fontWeight: 700 }}>
-                                                                                {qt}
-                                                                            </div>
-                                                                        ))}
+                                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                                                        {quickTests.map((qt: string, qti: number) => {
+                                                                            const isOpen = expandedQuickTest?.idx === qti && expandedQuickTest?.causeIdx === idx;
+                                                                            const isLoading = isOpen && expandedQuickTest?.loading;
+                                                                            const proc = isOpen ? expandedQuickTest?.procedure : null;
+                                                                            return (
+                                                                                <div key={qti}>
+                                                                                    {/* Pill / Header */}
+                                                                                    <div
+                                                                                        onClick={async () => {
+                                                                                            if (isOpen) {
+                                                                                                // collapse
+                                                                                                setExpandedQuickTest(null);
+                                                                                                return;
+                                                                                            }
+                                                                                            setExpandedQuickTest({ idx: qti, causeIdx: idx, loading: true, procedure: null });
+                                                                                            try {
+                                                                                                const res = await runQuickTestElaboration(qt, lang,
+                                                                                                    `${selectedBrand || parsed?.detectedBrand || ''} ${selectedModel || (parsed as any)?.detectedModel || ''}`.trim() || undefined
+                                                                                                );
+                                                                                                setExpandedQuickTest(s => s ? { ...s, loading: false, procedure: res } : null);
+                                                                                            } catch {
+                                                                                                setExpandedQuickTest(s => s ? { ...s, loading: false } : null);
+                                                                                            }
+                                                                                        }}
+                                                                                        style={{
+                                                                                            padding: '8px 12px',
+                                                                                            background: isOpen ? '#EEF2FF' : '#F1F5F9',
+                                                                                            border: `1px solid ${isOpen ? '#C7D2FE' : '#E2E8F0'}`,
+                                                                                            borderRadius: isOpen ? '8px 8px 0 0' : 8,
+                                                                                            fontSize: '0.72rem', color: isOpen ? '#4338CA' : '#475569', fontWeight: 700,
+                                                                                            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+                                                                                        }}
+                                                                                    >
+                                                                                        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                                                            <Zap size={10} color={isOpen ? '#4338CA' : '#6366F1'} />
+                                                                                            {qt}
+                                                                                        </span>
+                                                                                        <span style={{ fontSize: '0.65rem', color: '#94A3B8', marginLeft: 8, flexShrink: 0 }}>
+                                                                                            {isOpen ? '▲' : '▼'}
+                                                                                        </span>
+                                                                                    </div>
+
+                                                                                    {/* Inline Accordion Content */}
+                                                                                    {isOpen && (
+                                                                                        <div style={{
+                                                                                            border: '1px solid #C7D2FE', borderTop: 'none',
+                                                                                            borderRadius: '0 0 8px 8px', background: '#FAFBFF', padding: 14
+                                                                                        }}>
+                                                                                            {isLoading ? (
+                                                                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                                                                                    {[85, 70, 90, 60].map((w, i) => (
+                                                                                                        <div key={i} style={{ height: 12, background: '#E2E8F0', borderRadius: 6, width: `${w}%` }} />
+                                                                                                    ))}
+                                                                                                </div>
+                                                                                            ) : proc ? (
+                                                                                                <>
+                                                                                                    {/* Time + Tools */}
+                                                                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
+                                                                                                        <div style={{ padding: 10, background: 'white', borderRadius: 8, border: '1px solid #E2E8F0' }}>
+                                                                                                            <div style={{ fontSize: '0.55rem', fontWeight: 900, color: '#64748B', textTransform: 'uppercase', marginBottom: 3 }}>{lp(lang, 'Timp estimat', 'Gesch. Zeit', 'Est. Time')}</div>
+                                                                                                            <div style={{ fontWeight: 800, fontSize: '0.78rem', color: '#0F172A' }}>{proc.estimatedTime}</div>
+                                                                                                        </div>
+                                                                                                        <div style={{ padding: 10, background: 'white', borderRadius: 8, border: '1px solid #E2E8F0' }}>
+                                                                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 3 }}>
+                                                                                                                <Wrench size={9} color="#6366F1" />
+                                                                                                                <span style={{ fontSize: '0.55rem', fontWeight: 900, color: '#64748B', textTransform: 'uppercase' }}>{lp(lang, 'Scule', 'Werkzeuge', 'Tools')}</span>
+                                                                                                            </div>
+                                                                                                            <div style={{ fontWeight: 700, fontSize: '0.72rem', color: '#0F172A' }}>{proc.requiredTools}</div>
+                                                                                                        </div>
+                                                                                                    </div>
+
+                                                                                                    {/* Steps */}
+                                                                                                    <div style={{ marginBottom: 12 }}>
+                                                                                                        <div style={{ fontSize: '0.58rem', fontWeight: 900, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>{lp(lang, 'Pași de Execuție', 'Ausführungsschritte', 'Execution Steps')}</div>
+                                                                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                                                                                            {proc.steps.map((step, i) => (
+                                                                                                                <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                                                                                                                    <div style={{ width: 20, height: 20, borderRadius: 6, background: '#6366F1', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 900, flexShrink: 0 }}>{i + 1}</div>
+                                                                                                                    <div style={{ lineHeight: 1.5, color: '#1E293B', fontWeight: 600, fontSize: '0.78rem', paddingTop: 2 }}>{step}</div>
+                                                                                                                </div>
+                                                                                                            ))}
+                                                                                                        </div>
+                                                                                                    </div>
+
+                                                                                                    {/* Pass/Fail */}
+                                                                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                                                                                                        <div style={{ padding: 10, background: '#F0FDF4', borderRadius: 8, border: '1px solid #BBF7D0' }}>
+                                                                                                            <div style={{ fontSize: '0.55rem', fontWeight: 900, color: '#16A34A', textTransform: 'uppercase', marginBottom: 4 }}>✔ {lp(lang, 'BUN', 'GUT', 'PASS')}</div>
+                                                                                                            <div style={{ fontWeight: 700, color: '#15803D', fontSize: '0.75rem', lineHeight: 1.4 }}>{proc.passResult}</div>
+                                                                                                        </div>
+                                                                                                        <div style={{ padding: 10, background: '#FFF1F2', borderRadius: 8, border: '1px solid #FECDD3' }}>
+                                                                                                            <div style={{ fontSize: '0.55rem', fontWeight: 900, color: '#DC2626', textTransform: 'uppercase', marginBottom: 4 }}>✖ {lp(lang, 'DEFECT', 'FEHLER', 'FAIL')}</div>
+                                                                                                            <div style={{ fontWeight: 700, color: '#B91C1C', fontSize: '0.75rem', lineHeight: 1.4 }}>{proc.failResult}</div>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                </>
+                                                                                            ) : (
+                                                                                                <div style={{ fontSize: '0.8rem', color: '#94A3B8', textAlign: 'center', padding: '8px 0' }}>
+                                                                                                    {lp(lang, 'Procedura nu a putut fi generată.', 'Verfahren nicht verfügbar.', 'Could not generate procedure.')}
+                                                                                                </div>
+                                                                                            )}
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
+                                                                            );
+                                                                        })}
                                                                     </div>
                                                                 </div>
                                                             )}

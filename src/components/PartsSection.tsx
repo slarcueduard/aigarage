@@ -78,42 +78,83 @@ function AiPartCard({
     vehicleContext,
     region,
     currency,
+    lang,
 }: {
     part: AIPartsResult['causes'][0]['parts'][0];
     vehicleContext: PartsSectionProps['vehicleContext'];
     region: PartsRegion;
     currency: string;
+    lang: Lang;
 }) {
-    const links = generateShopLinks(part.name, part.name, vehicleContext, region);
-    return (
-        <div style={{
-            background: 'white',
-            border: '1.5px solid #E0E7FF',
-            borderRadius: 14,
-            padding: '12px',
-            boxShadow: '0 2px 8px rgba(99,102,241,0.07)',
-        }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-                <div style={{ fontWeight: 800, color: '#1E293B', fontSize: '0.85rem', flex: 1 }}>{part.name}</div>
-                <div style={{
-                    padding: '4px 10px',
-                    background: '#EEF2FF',
-                    color: '#4338CA',
-                    borderRadius: 8,
-                    fontSize: '0.75rem',
-                    fontWeight: 900,
-                    whiteSpace: 'nowrap',
-                    marginLeft: 8,
-                }}>
-                    ~ {part.price} {currency}
+    // We will render three tier blocks: Cheapest, Recommended, Original
+    const renderTier = (tierName: string, tierKey: 'cheapest' | 'recommended' | 'original', badgeColor: string, textColor: string) => {
+        const tierData = part[tierKey];
+        if (!tierData) return null;
+
+        const links = generateShopLinks(tierData.brand + ' ' + part.name, part.name, vehicleContext, region);
+        
+        return (
+            <div style={{
+                background: 'white',
+                border: '2px solid #111827',
+                borderRadius: 0,
+                padding: '12px',
+                marginTop: 8,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 8,
+                boxShadow: '2px 2px 0px #111827'
+            }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{
+                            padding: '4px 8px',
+                            background: badgeColor,
+                            color: textColor,
+                            border: '2px solid #111827',
+                            borderRadius: 0,
+                            fontSize: '0.70rem',
+                            fontWeight: 900,
+                            textTransform: 'uppercase'
+                        }}>{tierName}</span>
+                        <span style={{ fontSize: '0.9rem', fontWeight: 900, color: '#111827' }}>
+                            {tierData.brand}
+                        </span>
+                    </div>
+                    <div style={{ fontSize: '1rem', fontWeight: 900, color: '#111827' }}>
+                        ~ {tierData.price} {currency}
+                    </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <div style={{ fontSize: '0.8rem', color: '#111827', fontWeight: 600 }}>
+                        {lp(lang, 'Sursă sugerată:', 'Empfohlene Quelle:', 'Suggested source:')} <strong>{tierData.shop}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 4 }}>
+                        <ShopLinkRow links={links} />
+                    </div>
                 </div>
             </div>
-            {part.note && (
-                <div style={{ fontSize: '0.72rem', color: '#64748B', marginBottom: 8, fontStyle: 'italic' }}>
-                    {part.note}
-                </div>
-            )}
-            <ShopLinkRow links={links} />
+        );
+    };
+
+    return (
+        <div style={{
+            background: '#F9FAFB',
+            border: '2px solid #111827',
+            borderRadius: 0,
+            padding: '16px',
+            boxShadow: '4px 4px 0px #111827',
+            marginBottom: 16
+        }}>
+            <div style={{ fontWeight: 900, color: '#111827', fontSize: '1.05rem', marginBottom: 6, textTransform: 'uppercase' }}>
+                {part.name}
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {renderTier(lp(lang, 'Buget', 'Budget', 'Budget'), 'cheapest', '#F3F4F6', '#111827')}
+                {renderTier(lp(lang, 'Optim', 'Optimal', 'Optimal'), 'recommended', '#DB0020', 'white')}
+                {renderTier('OEM', 'original', '#FFD700', '#111827')}
+            </div>
         </div>
     );
 }
@@ -129,20 +170,21 @@ function CatalogPartCard({
     return (
         <div style={{
             background: 'white',
-            border: '1.5px solid #F1F5F9',
-            borderRadius: 14,
+            border: '2px solid #111827',
+            borderRadius: 0,
             padding: '12px',
+            marginBottom: 10
         }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-                <div style={{ fontWeight: 800, color: '#1E293B', fontSize: '0.85rem', flex: 1 }}>
+                <div style={{ fontWeight: 800, color: '#111827', fontSize: '0.9rem', flex: 1, textTransform: 'uppercase' }}>
                     {lang === 'ro' ? part.name : lang === 'de' ? part.nameDe : part.nameEn}
                 </div>
                 <div style={{
                     padding: '4px 10px',
-                    background: '#F1F5F9',
-                    color: '#6366F1',
-                    borderRadius: 8,
-                    fontSize: '0.75rem',
+                    background: '#111827',
+                    color: 'white',
+                    borderRadius: 0,
+                    fontSize: '0.80rem',
                     fontWeight: 900,
                     whiteSpace: 'nowrap',
                     marginLeft: 8,
@@ -176,7 +218,7 @@ export default function PartsSection({
     const aiCauseParts = aiPartsByCause?.causes?.find(c => c.causeIndex === causeIndex);
 
     return (
-        <div style={{ borderTop: '1px dashed #E2E8F0', paddingTop: 14 }}>
+        <div style={{ borderTop: '2px dashed #111827', paddingTop: 14 }}>
             {/* Section Header */}
             <div style={{
                 fontSize: '0.65rem',
@@ -239,6 +281,7 @@ export default function PartsSection({
                             vehicleContext={vehicleContext}
                             region={region}
                             currency={currency}
+                            lang={lang}
                         />
                     ))
                     : (

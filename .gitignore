@@ -12,6 +12,20 @@ dist
 dist-ssr
 *.local
 
+# Environment variables — NEVER commit these
+.env
+.env.*
+!.env.example
+
+# Temporary scripts and tool results
+tmp_*.cjs
+*.txt
+*.json
+!package.json
+!tsconfig*.json
+!vercel.json
+!eslint.config.js
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
