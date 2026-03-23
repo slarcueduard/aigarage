@@ -199,6 +199,8 @@ export function getFastDiagnostic(text: string, lang: 'ro' | 'de' | 'en' = 'ro')
 
     return {
         problemTitle: probTitle,
+        problemTitleRo: probTitle,
+        problemTitleDe: probTitle,
         confidence: matchedRule.cause.probability - 15, // Lower than AI confidence as it's a guess
         detectedBrand: parsed.detectedBrand ?? undefined,
         detectedModel: parsed.detectedModel ?? undefined,
@@ -210,7 +212,7 @@ export function getFastDiagnostic(text: string, lang: 'ro' | 'de' | 'en' = 'ro')
                 causeIdentification: causeName,
                 probability: matchedRule.cause.probability,
                 technicalExplanation: techDetails,
-                executionPlan: repSteps,
+                executionPlan: Array.isArray(repSteps) ? repSteps : [repSteps],
                 partLocation: (matchedRule.cause as any).componentLocation || '',
                 requiredTools: ((matchedRule.cause as any).requiredTools || []).join(', ') || 'N/A',
                 quickTests: [],

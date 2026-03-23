@@ -438,6 +438,8 @@ export function getFastDtcDiagnostic(dtcCode: string, lang: 'ro' | 'de' | 'en' =
 
     const result: AIDiagnosticResult = {
         problemTitle: lang === 'en' ? `Fault Code: ${entry.code}` : lang === 'de' ? `Fehlercode: ${entry.code}` : `Cod de eroare: ${entry.code}`,
+        problemTitleRo: `Cod de eroare: ${entry.code}`,
+        problemTitleDe: `Fehlercode: ${entry.code}`,
         confidence: 95,
         dtcCodes: [entry.code],
         symptoms: [],
